@@ -117,15 +117,15 @@
 - **Removing by Index:** Use `.removeAt()` to delete an item at a specific index.
     ```dart
     tasks.removeAt(0); // Removes the first item
-    
+
 ### 15. Error Handling
 - **Try-Catch:** Prevents crashes when risky code fails.
 - **Finally:** (Optional) Code that runs no matter what happens (success or error).
     ```dart
     try {
-      print(tasks[10]); // Risky
+      print(tasks[10]); 
     } catch (e) {
-      print('Error: $e'); // Safety
+      print('Error: $e'); 
     } finally {
       print('Done'); // Always runs
     }

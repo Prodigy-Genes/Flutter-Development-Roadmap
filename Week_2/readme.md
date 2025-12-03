@@ -66,7 +66,8 @@
         item.checkOut(); // Calls the correct method for each type
       }
     }
-  ### 26. Interfaces
+    
+### 8. Interfaces
 - **Concept:** A contract that forces a class to implement specific methods.
 - **Dart Feature:** Dart has no `interface` keyword. Every class is an interface.
 - **Usage:** Use `implements` (instead of `extends`) to enforce the rules without inheriting the behavior.

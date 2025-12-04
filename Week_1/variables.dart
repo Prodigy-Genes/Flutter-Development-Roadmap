@@ -8,7 +8,9 @@ bool isTrue = true;
 
 var z = 10;
 
-dynamic d = 10; // can hold any type of value
+dynamic d = 10; 
+
+
 
 
 void main() {
@@ -17,11 +19,10 @@ void main() {
 
   print(a);
   print(b);
-
   print(isTrue);
 
   print(z);
-
+  d= "abx";
   print(d);
 }
   

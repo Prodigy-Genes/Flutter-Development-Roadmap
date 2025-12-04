@@ -23,4 +23,11 @@ void main(){
 
   fruits.clear();
   print('fruits after clearing: $fruits');
+
+  // Adding a new item at index 1
+  fruits.add("Mango");
+  fruits.add("Pineapple");
+  fruits.insert(0, "Apple");
+  print("fruits after adding Apple at 1 $fruits");
+
 }

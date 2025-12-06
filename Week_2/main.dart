@@ -1,67 +1,156 @@
-// Week 2 Assignment : Create a simple library management system with classes for books, members, and loans, demonstrating OOP principles.
+import 'dart:io';
+class LibrarySystem{
+  List<String> _Books = ["Lost", "Come back", "Awesome", "From Sun Down"];
+  Map<String, String> userCredentials = {
+    "Joseph":"123456",
+    "Osei":"654321"
+  };
+  List<String> get Books => _Books;
 
-abstract class Library {
-
-  String title;
-  Library(this.title);
-
-  void checkin();
-  void checkout();
-}
-
-class Books extends Library {
-
-  String author;
-  Books(String title, this.author): super(title);
-
-  @override
-  void checkin(){
-    print("Checking in a book $title by $author. ");
+  void welcome(){
+    print("Welcome to this library system");
   }
-  @override
-  void checkout(){
-    print("Checking out a book $title by $author. ");
+
+  void options(){
+    print("Here are a list of services the system provides.\n\n1.View books available. \n2.Return a book. \n3.Borrow books. \n4.View borrowed books. \n5.Exit");
   }
+
+  void showBooks(){
+    if(Books.isEmpty){
+      print("There are no books in the system right now.");
+    }
+    else {
+      print(
+        "These are the available books: \n$Books"
+      );
+    }
+  } 
+
+  bool validate(String name, String password){
+    if(userCredentials.containsKey(name) && userCredentials[name]==password){
+      print("Access Granted!");
+      
+      return true;
+    }
+    else{
+      print("Access Denied!");
+      return false;
+    }
+  }
+  
 }
 
 class Members{
-  String name;
+  static var library = LibrarySystem();
+  bool isLoggedin = false;
+  List<String> _borrowedBooks = [];
+  String? name;
+  String? password;
 
-  Members(this.name);
-
-  List<Books> _borrowedbooks = [];
-
-  void Borrow(Books book){
-    book.checkout();
-    print("$name has checked out a book ${book.title} by ${book.author}");
-    _borrowedbooks.add(book);
-    print("Book has been added to borrowed books list");
+  void returnBook(String Book){
+    if(library.Books.contains(Book)){
+      print("You can't return a book we already have");
+    }
+    else if(Book.isEmpty){
+      print("Indicate the book you wish to return.");
+    }
+    else if(!_borrowedBooks.contains(Book)){
+      print("You can't return a book you didn't borrow.");
+    }
+    else{
+      library.Books.add(Book);
+      print("Book has been returned.");
+    }
   }
 
-  void Return(Books book){
-    book.checkin();
-    print("$name has returned book ${book.title} by ${book.author}");
-    _borrowedbooks.remove(book);
-    print("Book has been removed from borrowed books list");
+  void borrowBook(String Book){
+    if(Book.isEmpty){
+      print("Indicate the book you wish to borrow");
+    }
+    else if(!library.Books.contains(Book)){
+      print("We don't have the book you wish to borrow. Try something else");
+    }
+    else{
+      library.Books.remove(Book);
+      _borrowedBooks.add(Book);
+      print("Book borrowed. Congratulations!");
+    }
   }
 
-  // to print the books in the list, since it is a private list, we need a getter
-  List<Books> get borrowedbooks => _borrowedbooks;
-
-  // Now a funtion to display it
-  void showList(){
-    print("Books borrowed includes: $borrowedbooks");
+  List<String> get borrowedBooks => _borrowedBooks;
+  void showborrowedBooks(){
+    if(borrowedBooks.isEmpty){
+      print("You have no books borrowed currently");
+    }else{
+      print("These are your borrowed books: \n$borrowedBooks");
+    }
   } 
+
+  void authenticate (){
+    print("Enter your name:");
+    name = stdin.readLineSync();
+    print("Enter your password");
+    password = stdin.readLineSync();
+    isLoggedin=library.validate( name!, password!);
+    
+    if(isLoggedin){
+      print("Welcome member $name");
+    }
+    else{
+      exit(0);
+    }
+  }
+
+  void chooseOption(){
+    library.options();
+    var selected = stdin.readLineSync();
+    if(selected == "1"){
+      print("----------------------------------------------------");
+      library.showBooks();
+      print("------------------------------------------------------");
+    }
+    else if(selected == "2"){
+      print("-------------------------------------------------------------");
+      print("Enter the book you wish to return");
+      String? Book = stdin.readLineSync();
+      returnBook(Book!);
+      print("---------------------------------------------------------------");
+    }
+    else if(selected == "3"){
+      print("Enter the book you wish to borrow");
+      print("-------------------------------------------------------------------");
+      String? Book = stdin.readLineSync();
+      borrowBook(Book!);
+      print("---------------------------------------------------------------------");
+    }
+    else if(selected == "4"){
+      print("---------------------------------------------------------------------");
+      showborrowedBooks();
+      print("----------------------------------------------------------------------");
+    }
+    else if(selected == "5"){
+      print("-----------------------------------------------------------------------");
+      print("Exiting system...");
+      print("------------------------------------------------------------------------");
+      exit(0);
+    }
+    else{
+      print("Invalid Option");
+    }
+  }
+
 }
 
+
 void main(){
+  var library = LibrarySystem();
+  library.welcome();
+  var member = Members();
+  member.authenticate();
+  while(true){
+    member.chooseOption();
+  }
 
-  var myBook = Books("Anarchious", "Prodigygenes");
-  var member1 = Members("Joseph");
+  
 
-  member1.Borrow(myBook);
-  member1.Return(myBook);
-
-  // Show list of borrowed books
-  member1.showList();
 }

@@ -1,6 +1,12 @@
+
 import 'dart:io';
+
+// Declare a class for the library system and set the funtions of the system
 class LibrarySystem{
+  // Declare private books list for the system
   List<String> _Books = ["Lost", "Come back", "Awesome", "From Sun Down"];
+
+  // A dictionary for member name and credentials
   Map<String, String> userCredentials = {
     "Joseph":"123456",
     "Osei":"654321"

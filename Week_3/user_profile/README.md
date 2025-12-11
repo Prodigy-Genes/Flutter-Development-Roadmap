@@ -1,8 +1,6 @@
  Week 3 Project: User Profile Screen
 
- Project Screenshot
- assets/images/user_setting.jpg
-![user_setting](https://github.com/user-attachments/assets/78b8252f-352e-4417-8257-953666575973)
+ 
 
  Overview
 

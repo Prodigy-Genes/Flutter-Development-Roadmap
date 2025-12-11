@@ -77,7 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             // Cover photo and the image in a stack
             Stack(
-              clipBehavior: Clip.none, // Allows the avatar to hang off the bottom
+              clipBehavior: Clip.none, 
               alignment: Alignment.center,
               children: [
                 // Cover Photo
@@ -213,7 +213,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 mainAxisSpacing: 10,
                 childAspectRatio: 1, // Square images
               ),
-              itemCount: 19,
+              itemCount: 13,
               itemBuilder: (context, index) {
                 return ClipRRect(
                   borderRadius: BorderRadius.circular(10), // Rounded corners for images

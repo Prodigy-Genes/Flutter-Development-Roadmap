@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:user_profile/screens/signup_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,20 +13,18 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'User Profile',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: Colors.black,
         appBarTheme: AppBarTheme(backgroundColor: Colors.transparent, elevation: 0),
       ),
-      home: const MyHomePage(title: 'User Profile'),
+      home: const SignUp(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-  final String title;
+  const MyHomePage({super.key,});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -36,7 +35,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      extendBodyBehindAppBar: true, // Allows the image to go behind the AppBar
+      extendBodyBehindAppBar: true, 
       appBar: AppBar(
         leading: Icon(Icons.arrow_back),
         actions: [

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:user_profile/components/FormFields.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:user_profile/components/google_button.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -20,26 +22,68 @@ class _SignUpState extends State<SignUp> {
           children: [
             SizedBox(height: 100),
             SizedBox(
-              height: 100,
               width: 250,
               
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text("WELCOME", 
-                  style: TextStyle(color: Colors.deepPurpleAccent, fontSize: 35, fontWeight: FontWeight.bold),
+                  Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      image: DecorationImage(
+                        image: AssetImage('assets/images/applogo.png'),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ),
                   SizedBox(height: 10),
-                  Text("SIGN UP",
-                  style: TextStyle(color: Colors.grey, fontSize: 20, ),
+                  Text("WELCOME TO SPOTLIGHT", 
+                  style: GoogleFonts.baloo2(color: const Color.fromARGB(255, 255, 222, 59), fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 5),
+                  Text("CREATE AN ACCOUNT",
+                  style: GoogleFonts.poppins(color: Colors.white, fontSize: 20, ),
                   )
                 
                 ]
               ),
             ),
-            SizedBox(height: 100),
+            SizedBox(height: 20),
             Formfields(),
-            
+            SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("Already have an account?",
+                style: GoogleFonts.poppins(
+                  color: Colors.white, 
+                  fontSize: 16, 
+                  fontWeight: FontWeight.w500
+                  ),
+                ),
+                SizedBox(width: 1),
+                TextButton(onPressed: (){
+                  debugPrint("Login pressed");
+                }, 
+                child: Text("Login",
+                style: GoogleFonts.baloo2(
+                  color: const Color.fromARGB(255, 255, 222, 59),
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold
+                ),))
+              ],
+            ),
+            SizedBox(height: 10,),
+            Divider(
+              indent: 50,
+              endIndent: 50,
+              color: Colors.grey,
+
+            ),
+            SizedBox(height: 10,),
+            GoogleButton(onPressed: () => debugPrint("Google button pressed"))
           ],
         )
       ),

@@ -1,6 +1,7 @@
 // ignore_for_file: file_names, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:user_profile/components/submit_button.dart';
 import 'package:user_profile/main.dart';
 
@@ -14,6 +15,7 @@ class Formfields extends StatefulWidget {
 class _FormfieldsState extends State<Formfields> {
   bool _isHidden = true; // Set a bool variable here to hold the state of  the view password icon
   bool _isLoading = false; // Variable controls the state of the button
+  bool _agreedtoterms = false;
 
   // Form key is defined here to validate the form
   final _formKey = GlobalKey<FormState>();
@@ -26,11 +28,11 @@ class _FormfieldsState extends State<Formfields> {
       children: [
         Container(
           padding: EdgeInsets.all(20),
-      width: 350,
-      decoration: BoxDecoration(
-        color: Colors.grey.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.all(Radius.circular(20))
-      ),
+          width: 350,
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 28, 88, 40),
+            borderRadius: BorderRadius.all(Radius.circular(20))
+          ),
         
         child: Form(
           key: _formKey, 
@@ -40,14 +42,14 @@ class _FormfieldsState extends State<Formfields> {
             decoration: InputDecoration(
               labelText: "Email",
               hintText: "Enter your email",
-              labelStyle: TextStyle(color: Colors.white),
-              hintStyle: TextStyle(color: Colors.grey),
+              labelStyle: GoogleFonts.poppins(color: Colors.white),
+              hintStyle: GoogleFonts.poppins(color: Colors.grey),
               prefixIcon: Icon(Icons.email, color: Colors.white),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide.none
               ),
-              fillColor: Colors.white.withValues(alpha: 0.1),
+              fillColor: Colors.black,
               filled: true,
               focusedErrorBorder: OutlineInputBorder(
                 borderSide: BorderSide(color: Colors.red),
@@ -74,8 +76,8 @@ class _FormfieldsState extends State<Formfields> {
             decoration: InputDecoration(
               labelText: "Password",
               hintText: "Enter your password",
-              labelStyle: TextStyle(color: Colors.white),
-              hintStyle: TextStyle(color: Colors.grey),
+              labelStyle: GoogleFonts.poppins(color: Colors.white),
+              hintStyle: GoogleFonts.poppins(color: Colors.grey),
               prefixIcon: Icon(Icons.lock, color: Colors.white),
               suffixIcon: IconButton(onPressed: (){
                 setState(() {
@@ -87,7 +89,7 @@ class _FormfieldsState extends State<Formfields> {
                 borderSide: BorderSide.none,
                 borderRadius: BorderRadius.circular(10)
               ),
-              fillColor: Colors.white.withValues(alpha: 0.1),
+              fillColor: Colors.black,
               filled: true,
               focusedErrorBorder: OutlineInputBorder(
                 borderSide: BorderSide(
@@ -112,8 +114,8 @@ class _FormfieldsState extends State<Formfields> {
             decoration: InputDecoration(
               labelText: "Confirm Password",
               hintText: "Confirm your password",
-              labelStyle: TextStyle(color: Colors.white),
-              hintStyle: TextStyle(color: Colors.grey),
+              labelStyle: GoogleFonts.poppins(color: Colors.white),
+              hintStyle: GoogleFonts.poppins(color: Colors.grey),
               prefixIcon: Icon(Icons.lock, color: Colors.white),
               suffixIcon: IconButton(onPressed: (){
                 setState(() {
@@ -125,7 +127,7 @@ class _FormfieldsState extends State<Formfields> {
                 borderRadius: BorderRadius.all(Radius.circular(10)),
                 borderSide: BorderSide.none
               ),
-              fillColor: Colors.white.withValues(alpha: 0.1),
+              fillColor: Colors.black,
               filled: true,
               focusedErrorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -145,15 +147,45 @@ class _FormfieldsState extends State<Formfields> {
               }
             },
           ),
+          SizedBox(height: 5,),
+          Row(
+            children: [
+              Checkbox(value: _agreedtoterms, onChanged: (bool? newvalue){
+                setState(() {
+                  _agreedtoterms = newvalue!;
+                });
+              },
+              activeColor: const Color.fromARGB(255, 255, 222, 59),
+              checkColor: Colors.black,
+              ),
+              
+              Text("I agree to the terms and conditions",
+              style: GoogleFonts.poppins(color: Colors.white, fontSize: 16),
+              )
+            ]
+          )
+
           ],
         )
           
       ),),
-      SizedBox(height: 50,),
+      SizedBox(height: 30,),
       SubmitButton(
         isLoading : _isLoading,
         onPressed: () async{ // used the async here to simulate a 2 seconds wait on press
-        FocusScope.of(context).unfocus(); 
+        FocusScope.of(context).unfocus(); // Removes the keyboard on press
+
+        if(!_agreedtoterms){
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Please agree to the terms and conditions",
+            style: GoogleFonts.poppins(color: Colors.white),),
+            backgroundColor: Colors.red,
+            
+            )
+          );
+          return;
+        }
+
         setState(() {
           _isLoading = true;
         });

@@ -37,7 +37,6 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       extendBodyBehindAppBar: true, 
       appBar: AppBar(
-        leading: Icon(Icons.arrow_back),
         actions: [
           PopupMenuButton(
             icon: Icon(Icons.more_vert),

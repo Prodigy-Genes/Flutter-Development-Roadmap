@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SubmitButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -14,15 +15,28 @@ class SubmitButton extends StatelessWidget {
       },
       child: Container(
       padding: EdgeInsets.all(20),
-      width: 180,
+      width: 150,
       height: 60,
       decoration: BoxDecoration(
-        color: Colors.deepPurpleAccent.withValues(alpha: 0.6),
+        color: const Color.fromARGB(255, 28, 88, 40),
         borderRadius: BorderRadius.all(Radius.circular(10))
       ),
       child: Center(
-        child: Text(isLoading? "Loading...": "Submit", style: TextStyle(color: Colors.white, fontSize: 20,),
-      ),
+        child: isLoading 
+               ? const SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(
+                  color: Color.fromARGB(255, 255, 222, 59),
+                ),
+               )
+               : Text("SUBMIT",
+                 style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold
+                 ),
+                )
     )
     ) 
     );

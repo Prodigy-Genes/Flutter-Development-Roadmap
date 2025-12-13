@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:user_profile/components/FormFields.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:user_profile/components/google_button.dart';
-import 'package:user_profile/screens/signin_screen.dart';
+import 'package:user_profile/components/signin_formfields.dart';
+import 'package:user_profile/screens/signup_screen.dart';
 
-class SignUp extends StatefulWidget {
-  const SignUp({super.key});
+class SigninScreen extends StatefulWidget {
+  const SigninScreen({super.key});
 
   @override
-  State<SignUp> createState() => _SignUpState();
+  State<SigninScreen> createState() => _SigninScreenState();
 }
 
-class _SignUpState extends State<SignUp> {
+class _SigninScreenState extends State<SigninScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,24 +40,25 @@ class _SignUpState extends State<SignUp> {
                     ),
                   ),
                   SizedBox(height: 10),
-                  Text("WELCOME TO SPOTLIGHT", 
-                  style: GoogleFonts.baloo2(color: const Color.fromARGB(255, 255, 222, 59), fontSize: 24, fontWeight: FontWeight.bold),
+                  Text("WELCOME BACK TO SPOTLIGHT", 
+                  style: GoogleFonts.baloo2(color: const Color.fromARGB(255, 255, 222, 59), fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 5),
-                  Text("CREATE AN ACCOUNT",
-                  style: GoogleFonts.poppins(color: Colors.white, fontSize: 20, ),
+                  Text("SIGN INTO YOUR ACCOUNT",
+                  style: GoogleFonts.poppins(color: Colors.white, fontSize: 18, ),
                   )
                 
                 ]
               ),
             ),
             SizedBox(height: 20),
-            Formfields(),
-            SizedBox(height: 5),
+            SigninFormfields(),
+            SizedBox(height: 20),
+            SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("Already have an account?",
+                Text("Don't have an account?",
                 style: GoogleFonts.poppins(
                   color: Colors.white, 
                   fontSize: 16, 
@@ -66,10 +67,10 @@ class _SignUpState extends State<SignUp> {
                 ),
                 SizedBox(width: 1),
                 TextButton(onPressed: (){
-                  debugPrint("Login pressed");
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => SigninScreen()));
+                  debugPrint("Register pressed");
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => SignUp()));
                 }, 
-                child: Text("Login",
+                child: Text("Register",
                 style: GoogleFonts.baloo2(
                   color: const Color.fromARGB(255, 255, 222, 59),
                   fontSize: 20,
@@ -89,7 +90,8 @@ class _SignUpState extends State<SignUp> {
           ],
         )
       ),
-      ) 
+      ),
+
     );
   }
 }

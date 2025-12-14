@@ -18,7 +18,7 @@ class CustomRadio extends StatelessWidget {
       ), 
       selected: selected,
       onSelected: onSelected,
-      selectedColor: const Color.fromARGB(255, 28, 88, 40),
+      selectedColor: const Color.fromARGB(255, 18, 67, 29),
       backgroundColor: label == "M"
           ? const Color.fromARGB(255, 255, 185, 72)
           : const Color.fromARGB(255, 255, 158, 210),

@@ -20,7 +20,7 @@ class _FormfieldsState extends State<Formfields> {
   bool _isHiddenC = true;
   bool _isLoading = false; // Variable controls the state of the button
   bool _agreedtoterms = false;
-  String _gender = "Male";
+  String _gender = "M";
 
   // Form key is defined here to validate the form
   final _formKey = GlobalKey<FormState>();
@@ -140,30 +140,29 @@ class _FormfieldsState extends State<Formfields> {
            ),
            SizedBox(height: 20,),
            //Gender field
-           Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+           Row(
             children: [
-              Text("Gender",
-              style: GoogleFonts.poppins(color: Colors.white, fontSize: 16),
-              ),
-              SizedBox(height: 10,),
-              Row(
-                children: [
-                  CustomRadio(text: "Male", value: "Male", groupValue: _gender, onTap: (value){
-                    setState(() {
-                      _gender = value;
-                    });
-                  }),
-                  SizedBox(width: 10,),
-                  CustomRadio(text: "Female", value: "Female", groupValue: _gender, onTap: (value){
-                    setState(() {
-                      _gender = value;
-                    });
-                  }),
-                ],
-              )
-            ],
-          ),
+              CustomRadio(
+                label: "M", 
+                selected: _gender == "M",
+                onSelected: (bool selected){
+                  setState(() {
+                    _gender = "M";
+                  });
+                },
+                ),
+              SizedBox(width: 10,),
+              CustomRadio(
+                label: "F", 
+                selected: _gender == "F",
+                onSelected: (bool selected){
+                  setState(() {
+                    _gender = "F";
+                  });
+                },                
+                ),
+            ]
+           ),
           SizedBox(height: 5,),
           Row(
             children: [

@@ -54,7 +54,6 @@ class _SigninScreenState extends State<SigninScreen> {
             SizedBox(height: 20),
             SigninFormfields(),
             SizedBox(height: 20),
-            SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -78,14 +77,14 @@ class _SigninScreenState extends State<SigninScreen> {
                 ),))
               ],
             ),
-            SizedBox(height: 10,),
+            SizedBox(height: 5,),
             Divider(
               indent: 50,
               endIndent: 50,
               color: Colors.grey,
 
             ),
-            SizedBox(height: 10,),
+            SizedBox(height: 20,),
             GoogleButton(onPressed: () => debugPrint("Google button pressed"))
           ],
         )

@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CustomTextformField extends StatelessWidget {
+  // A reusable custom textform field widget with predefined parameters
   final String labelText;
   final String hintText;
   final IconData icon;
   final bool obscureText;
   final TextInputType keyboardType;
   final TextEditingController controller;
-  final FormFieldValidator<String> validator;
-  final VoidCallback? onTap;
+  final FormFieldValidator<String> validator; // Validator function for form fields
+  final VoidCallback? onTap; // Optional onTap function for password visibility toggle since not all fields need it
   const CustomTextformField(
     {super.key, 
   required this.labelText, 
@@ -33,6 +34,7 @@ class CustomTextformField extends StatelessWidget {
         hintStyle: GoogleFonts.poppins(color: Colors.grey),
         prefixIcon: Icon(icon, color: Colors.white),
         
+        // Checks for password field to show the view/hide icon
         suffixIcon: keyboardType == TextInputType.visiblePassword 
         ? IconButton(
           onPressed: onTap,
@@ -41,7 +43,7 @@ class CustomTextformField extends StatelessWidget {
           : Icons.visibility_off, color: Colors.white),
         ) 
         
-        : null,
+        : null, // return null if not a password field
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none

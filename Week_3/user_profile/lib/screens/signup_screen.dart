@@ -16,6 +16,7 @@ class _SignUpState extends State<SignUp> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
+      // Set up a Scroll view to enable scrolling on the screen 
       body: SingleChildScrollView(
         child: Center(
         child: Column(
@@ -41,6 +42,7 @@ class _SignUpState extends State<SignUp> {
                   ),
                   SizedBox(height: 10),
                   Text("WELCOME TO SPOTLIGHT", 
+                  // Using google font here 
                   style: GoogleFonts.baloo2(color: const Color.fromARGB(255, 255, 222, 59), fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 5),
@@ -67,6 +69,7 @@ class _SignUpState extends State<SignUp> {
                 SizedBox(width: 1),
                 TextButton(onPressed: (){
                   debugPrint("Login pressed");
+                  // Navigate to Login screen
                   Navigator.push(context, MaterialPageRoute(builder: (context) => SigninScreen()));
                 }, 
                 child: Text("Login",

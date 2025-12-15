@@ -67,6 +67,7 @@ class _UserprofileScreenState extends State<UserprofileScreen> {
                   width: double.infinity,
                   decoration: BoxDecoration(
                     image: DecorationImage(
+                      // Used a cached network image for better performance
                       image: CachedNetworkImageProvider('https://picsum.photos/800/400?image=16'), 
                       fit: BoxFit.cover,
                     ),
@@ -90,6 +91,7 @@ class _UserprofileScreenState extends State<UserprofileScreen> {
                     backgroundColor: Colors.black, // Border effect
                     child: CircleAvatar(
                       radius: 50,
+                      // Used a cached network image for better performance
                       backgroundImage: CachedNetworkImageProvider(
                         'https://avatars.githubusercontent.com/u/101043671?v=4'),
                     ),
@@ -114,9 +116,18 @@ class _UserprofileScreenState extends State<UserprofileScreen> {
               style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[400], letterSpacing: 1.2),
             ),
             SizedBox(height: 5),
-            Text(
-              'Gender: ${widget.gender ?? 'Undefined'}',
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("Gender: ", style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[400])),
+            widget.gender == "M"
+            ?Text("Male",
               style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[400], letterSpacing: 1.2),
+            )
+            :Text("Female",
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[400], letterSpacing: 1.2),
+            ),
+              ],
             ),
             SizedBox(height: 20),
             
@@ -209,6 +220,7 @@ class _UserprofileScreenState extends State<UserprofileScreen> {
               itemBuilder: (context, index) {
                 return ClipRRect(
                   borderRadius: BorderRadius.circular(10), 
+                  // Used a cached network image for better performance
                   child: CachedNetworkImage(
                     imageUrl: 'https://picsum.photos/300?image=${index + 20}',
                     fit: BoxFit.cover,

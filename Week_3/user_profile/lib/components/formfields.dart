@@ -17,16 +17,23 @@ class Formfields extends StatefulWidget {
 
 class _FormfieldsState extends State<Formfields> {
   bool _isHidden = true; // Set a bool variable here to hold the state of  the view password icon
-  bool _isHiddenC = true;
+  bool _isHiddenC = true; // using another password variable to control each view icon individually
   bool _isLoading = false; // Variable controls the state of the button
+  // Set a variable for the checkbox widget 
   bool _agreedtoterms = false;
+
+  // A variable to control the radio widget
   String _gender = "M";
 
   // Form key is defined here to validate the form
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _passwordController = TextEditingController(); 
+   // Passed a password controller here as to hold the password a user types in a means to compare it against the confirm password field
+  final TextEditingController _passwordController = TextEditingController();
+
+  // An email and username controller to hold user details which will later be passed theough screens upon successful form validation
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
+  
   final TextEditingController _confirmPasswordController = TextEditingController();
 
  
@@ -63,6 +70,7 @@ class _FormfieldsState extends State<Formfields> {
            },
            ),
            SizedBox(height: 10,),
+
            //Email field
            CustomTextformField(
             controller: _emailController,
@@ -75,7 +83,7 @@ class _FormfieldsState extends State<Formfields> {
             if(value == null || value.isEmpty){
               return "Please enter your email";
             }
-            // Email validation using regex 
+            // Email validation using regex, 
             else if( RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,10}$').hasMatch(value) == false){
               return "Please enter a valid email";
             }
@@ -139,7 +147,8 @@ class _FormfieldsState extends State<Formfields> {
            },
            ),
            SizedBox(height: 20,),
-           //Gender field
+
+           //Gender field using a flutter widget 
            Row(
             children: [
               CustomRadio(
@@ -166,7 +175,9 @@ class _FormfieldsState extends State<Formfields> {
           SizedBox(height: 5,),
           Row(
             children: [
-              Checkbox(value: _agreedtoterms, onChanged: (bool? newvalue){
+              Checkbox(
+                value: _agreedtoterms, 
+                onChanged: (bool? newvalue){
                 setState(() {
                   _agreedtoterms = newvalue!;
                 });
@@ -191,6 +202,7 @@ class _FormfieldsState extends State<Formfields> {
         onPressed: () async{ // used the async here to simulate a 2 seconds wait on press
         FocusScope.of(context).unfocus(); // Removes the keyboard on press
 
+        // Checks if agreed to terms is checked before loading begins
         if(!_agreedtoterms){
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Please agree to the terms and conditions",
@@ -207,14 +219,19 @@ class _FormfieldsState extends State<Formfields> {
         });
 
         debugPrint("Submit pressed");
+        // Check the current state of the form using the already defined formkey to validate it
         if(_formKey.currentState!.validate()){
           debugPrint("Form is valid");
+          // Await a 2 seconds simulated delay
           await Future.delayed(const Duration(seconds: 2));
+          // If screen is still around, set loading state to false 
           if(mounted){
             setState(() {
               _isLoading = false;
             });
+            // Push replacement replaces the current screen with the next screen. 
             Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => UserprofileScreen(
+              // Passed user credentials to the next screen
               username: _usernameController.text,
               email: _emailController.text,
               gender: _gender,
@@ -224,6 +241,14 @@ class _FormfieldsState extends State<Formfields> {
           
         }else{
           debugPrint("Form is invalid");
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Please check your entered details carefully",
+            style: GoogleFonts.poppins(color: Colors.white),),
+            backgroundColor: Colors.red,
+            
+            )
+          );
+          return
           setState(() {
             _isLoading = false;
           });

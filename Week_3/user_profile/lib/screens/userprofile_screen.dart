@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:user_profile/screens/signup_screen.dart';
 
 class UserprofileScreen extends StatefulWidget {
   final String? username;
@@ -29,6 +30,7 @@ class _UserprofileScreenState extends State<UserprofileScreen> {
               } 
               else if (value == 'logout') {
                 debugPrint("Logging out");
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SignUp()));
               }
             } ,
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[

@@ -95,7 +95,9 @@ class _UserprofileScreenState extends State<UserprofileScreen> {
                       radius: 50,
                       // Used a cached network image for better performance
                       backgroundImage: CachedNetworkImageProvider(
-                        'https://avatars.githubusercontent.com/u/101043671?v=4'),
+                        'https://avatars.githubusercontent.com/u/101043671?v=4',
+                        
+                        ),
                     ),
                   ),
                 ),

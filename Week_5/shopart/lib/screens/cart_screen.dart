@@ -8,6 +8,7 @@ class CartScreen extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
+    final cart = context.watch<CartProvider>();
     return Scaffold(
       appBar: AppBar(
         
@@ -20,8 +21,7 @@ class CartScreen extends StatelessWidget {
       ),
 
       // Set Consumer so whenver notifylisteners is set in the provider it rebuilds the widget
-      body: Consumer<CartProvider>(builder: (context, cart, child){
-        return Column(
+      body: Column(
           children: [
             // List of cart items
             // Use Expanded to make the list take available space
@@ -60,8 +60,7 @@ class CartScreen extends StatelessWidget {
               ),
             )
           ],
+      )
         );
-      })
-    );
   }
 }

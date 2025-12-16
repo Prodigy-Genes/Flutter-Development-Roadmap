@@ -27,7 +27,7 @@ class CartProvider extends ChangeNotifier {
         (existingCartItem){
           return CartItem(
             id: existingCartItem.id, 
-            title: existingCartItem.id, 
+            title: existingCartItem.title, 
             quantity: existingCartItem.quantity + 1, 
             price: existingCartItem.price
             );

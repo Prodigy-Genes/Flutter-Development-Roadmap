@@ -76,7 +76,7 @@ class CatalogScreen extends StatelessWidget {
                     onPressed: (){
                       // Add to cart functionality
                       // Over here we call the addToCart method from the CartProvider class
-                      Provider.of<CartProvider>(context, listen: false).addToCart(product);
+                      context.read<CartProvider>().addToCart(product);
 
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text("${product.title} has been added to cart"

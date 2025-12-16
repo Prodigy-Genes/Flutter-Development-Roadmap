@@ -30,13 +30,17 @@ class CartScreen extends StatelessWidget {
                 itemCount: cart.cartItems.length,
                 itemBuilder: (context, index){
                   
-                  final product = cart.cartItems[index];
+                  final cartItem = cart.cartItems.values.toList()[index];
                   return ListTile(
-                    title: Text(product.title, style: GoogleFonts.lato(),),
-                    subtitle: Text("\$${product.price.toStringAsFixed(2)}", style: GoogleFonts.lato(),),
+                    leading: CircleAvatar(
+                      backgroundColor: Colors.purple,
+                      child: Text("${cartItem.quantity}x", style: GoogleFonts.lato(color: Colors.white),),
+                    ),
+                    title: Text(cartItem.title, style: GoogleFonts.lato(),),
+                    subtitle: Text("\$${cartItem.price.toStringAsFixed(2)}", style: GoogleFonts.lato(),),
                     trailing: IconButton(
                       // Remove from cart
-                      onPressed: () => cart.removeFromCart(product), 
+                      onPressed: () => cart.removeSingleItem(cartItem.id), 
                       icon: Icon(Icons.circle))
                   ,
                   );

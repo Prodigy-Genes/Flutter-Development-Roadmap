@@ -9,6 +9,9 @@ class CatalogScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+
+    
+
     final List<Product> items = [
       Product(
         id: "1", 

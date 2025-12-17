@@ -73,9 +73,6 @@ class CartController extends Notifier<CartState>{
     }
 
   }
-
-  
-
   
 
   // LOGIC: CLEAR CART

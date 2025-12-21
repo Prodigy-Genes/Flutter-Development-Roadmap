@@ -19,6 +19,17 @@ class Todo {
       completed: json['completed'],
     );
   }
+
+  // We need a new instance of the object with the updated model using copyWith
+  // Allows us to change one property while keeping others the same
+  Todo copyWith({bool? completed}){
+    return Todo(
+      userId: userId, 
+      id: id, 
+      title: title, 
+      completed: completed ?? this.completed
+      );
+  }
 }
 
   

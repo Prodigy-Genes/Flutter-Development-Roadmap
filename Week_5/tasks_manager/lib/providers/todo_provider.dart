@@ -34,7 +34,7 @@ class TodoNotifier extends AsyncNotifier<TodoState>{
   } 
   
   // 2. Add methods to modify the data
-  void deleteTodo(int todoId){
+  Future<void> deleteTodo(int todoId) async{
     // We check if current state is not loading yet, we do nothing
     final currentState = state;
     if(!currentState.hasValue) return;
@@ -47,9 +47,17 @@ class TodoNotifier extends AsyncNotifier<TodoState>{
 
     // We update the state which triggers the UI to rebuild
     state =AsyncData(newList);
+
+    // Sync with API
+    try{
+      await ApiService().deleteTodo(todoId);
+    }catch(e){
+      // roll back
+      state = AsyncData(oldList);
+    }
   }
 
-  void markasComplete(int todoId){
+  Future<void> markasComplete(int todoId) async{
     final currentState = state;
     // We use the oldList
     final oldList = currentState.value!;
@@ -66,6 +74,52 @@ class TodoNotifier extends AsyncNotifier<TodoState>{
 
   // We then update the state which triggers the UI to rebuild
   state = AsyncData(newList);
+
+  // Sync with API
+  try{
+    final targetTodo = newList.firstWhere((todo) => todo.id == todoId);
+    await ApiService().updateTodo(targetTodo.id, targetTodo.completed);
+
+    }catch(e){
+    // rollback
+    state = AsyncData(oldList);
+
+    }
+  }
+
+  // add a todo
+  Future<void> addTodo(String title) async{
+    // Create a new todo
+    if (!state.hasValue) return;
+    // If we already have an item with this ID, generate a unique one based on timestamp
+    
+    final tempTodo = Todo(
+      
+      userId: 1,
+      id: DateTime.now().millisecondsSinceEpoch,
+      title: title,
+      completed: false
+    );
+
+    final previousState = state.value!;
+    state = AsyncData([...previousState, tempTodo]);
+
+    // Sync with API
+    try{
+        final addedTodo = await ApiService().addTodos(tempTodo);
+
+      final updatedList = state.value!.map((todo) {
+      return todo.id == tempTodo.id 
+          ? addedTodo.copyWith(id: tempTodo.id)
+          : todo;
+    }).toList();
+    
+    // Update the UI
+    state = AsyncData(updatedList);
+    }catch(e){
+      // rollback
+      //state = AsyncData(previousState);
+    }
   }
 }
 // Make the provider accessible to the UI

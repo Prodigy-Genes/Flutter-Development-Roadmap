@@ -37,6 +37,7 @@ class TodolistScreen extends ConsumerWidget {
               itemBuilder: (context, index){
                 final todo = todos[index];
                 return ListTile(
+                  key: ValueKey(todo.id),
                   // Leading icon to mark task as completed
                   leading: IconButton(onPressed: (){
                     ref.read(todoProvider.notifier).markasComplete(todo.id);
@@ -77,6 +78,47 @@ class TodolistScreen extends ConsumerWidget {
           );
         }
         ),
+      floatingActionButton: FloatingActionButton(
+        onPressed:()=> _showAddTaskDialogue(context, ref),
+        child: Icon(Icons.add)
+        ),
     );
   }
+}
+
+
+// A helper function to display an addTodo popUp
+void _showAddTaskDialogue(BuildContext context, WidgetRef ref){
+  final controller = TextEditingController();
+  showDialog(
+    context: context, 
+    builder: (context)=>AlertDialog(
+      title: Text("Add New Task"),
+      content: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          hintText: "Enter a new task title"
+        ),
+        autofocus: true,
+      ),
+      actions: [
+        TextButton(onPressed: (){
+          Navigator.pop(context);
+        }, child: Text("Cancel")),
+        TextButton(
+          onPressed: (){
+            ref.read(todoProvider.notifier).addTodo(controller.text);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Task ${controller.text} added succesfully"),
+              duration: Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: Colors.green
+              )
+            );
+            Navigator.pop(context);
+          
+          }, child: Text("Add"),
+        )
+      ],
+    ));
 }

@@ -20,7 +20,6 @@ class CompletedtasksScreen extends ConsumerWidget {
       data: (completedtodos){
         return RefreshIndicator(
           onRefresh :() async{
-            ref.invalidate(todoProvider);
             ref.refresh(todoProvider.future);
           },
           child: ListView.builder(

@@ -29,7 +29,6 @@ class TodolistScreen extends ConsumerWidget {
         data: (todos) {
           return RefreshIndicator(
             onRefresh: () async{
-              ref.invalidate(todoProvider);
               ref.refresh(todoProvider.future);
             },
             child: ListView.builder(

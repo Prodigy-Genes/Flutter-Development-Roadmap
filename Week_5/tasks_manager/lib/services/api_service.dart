@@ -14,7 +14,7 @@ class ApiService {
       'Accept': 'application/json', // Explicitly ask for JSON
     };
     final uri = Uri.parse("$baseUrl?_limit=5");
-    final response = await http.get(uri, headers: headers).timeout(Duration(seconds: 5)); // Making a GET request
+    final response = await http.get(uri, headers: headers); // Making a GET request
 
     //print('Response Status: ${response.statusCode}');
     //print('Response Body: ${response.body}');

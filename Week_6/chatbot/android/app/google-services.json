@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "157926434798",
+    "project_id": "chatbot-rgt-week6",
+    "storage_bucket": "chatbot-rgt-week6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:157926434798:android:e1bb8766bca09c513dd0ff",
+        "android_client_info": {
+          "package_name": "com.example.chatbot"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeFbMO7aYjC6I0xN0VNyHFC1kFpyXA1Fw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

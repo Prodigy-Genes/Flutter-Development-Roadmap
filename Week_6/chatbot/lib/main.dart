@@ -1,15 +1,15 @@
 import 'package:chatbot/screens/chat_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-// Load the .env file 
-Future<void> loadEnv() async{
-  await dotenv.load(fileName: ".env");
-}
+
 
 Future<void> main() async{
-  await loadEnv();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 

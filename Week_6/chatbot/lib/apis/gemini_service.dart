@@ -1,16 +1,12 @@
+import 'package:firebase_ai/firebase_ai.dart';
 
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
 
 class GeminiService {
   Future<String?> generateResponse(String prompt) async{
     
     try{
-      final apiKey = dotenv.env['API_KEY']??"";
-    // Check if the apiKey is empty
-    if(apiKey.isEmpty) return "API KEY NOT FOUND";
-
-    final model = GenerativeModel(apiKey: apiKey, model: 'gemini-1.5-flash');
+      // Initialisee Gemini Developer Backend service
+    final model = FirebaseAI.googleAI().generativeModel(model: "gemini-2.5-flash");
     final content = [Content.text(prompt)];
     final response = await model.generateContent(content);
     return response.text;

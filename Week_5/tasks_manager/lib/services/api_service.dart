@@ -13,11 +13,11 @@ class ApiService {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
       'Accept': 'application/json', // Explicitly ask for JSON
     };
-    final uri = Uri.parse("$baseUrl?_limit=5");
+    final uri = Uri.parse(baseUrl);
     final response = await http.get(uri, headers: headers); // Making a GET request
 
     //print('Response Status: ${response.statusCode}');
-    //print('Response Body: ${response.body}');
+    print('Response Body: ${response.body}');
     if(response.statusCode == 200){
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((json) => Todo.fromJson(json)).toList(); // using map to convert each JSON object to a Todo instance

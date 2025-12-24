@@ -1,5 +1,4 @@
 import 'package:tasks_manager/models/todo.dart';
-// import riverpod
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tasks_manager/services/api_service.dart';
 
@@ -53,7 +52,7 @@ class TodoNotifier extends AsyncNotifier<TodoState>{
       await ApiService().deleteTodo(todoId);
     }catch(e){
       // roll back
-      state = AsyncData(oldList);
+      //rstate = AsyncData(oldList);
     }
   }
 

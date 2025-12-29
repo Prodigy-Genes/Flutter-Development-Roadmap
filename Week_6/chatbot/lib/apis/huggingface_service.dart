@@ -10,37 +10,38 @@ class HuggingfaceService {
   static const String modelId = "HuggingFaceH4/zephyr-7b-beta:featherless-ai";
   static const String apiUrl = "https://router.huggingface.co/v1/chat/completions";
 
-  
-  
+  // Load apikey from .env 
+  final apiToken = dotenv.env["API_KEY"];
+    
+  final List<Map<String, String>> _messages = [
+    {
+      "role": "system",
+      "content": "You are a helpful chat assistant. Engage the user in a friendly and natural conversation."
+    }
+  ];
 
   // function to generate response
   Future<String?> generateResponse (String message) async{
+    
     try{
-      // Load apikey from .env 
-      final apiToken = dotenv.env["API_KEY"];
       if (apiToken == null) return "Error: API_KEY not found.";
+
+      _messages.add({"role": "user", "content": message});
       // Assign the Headers when making a POST request to the API
       final headers = {
         'Authorization': 'Bearer $apiToken',
         'Content-Type': 'application/json'
       };
 
-      // Now declaring the body since the API expects some sort of 
-      // body and structure
+      // We send a prompt and message to the model in Json format as the body 
       final body = jsonEncode({
-        "model": modelId, // The model ID goes inside the body now
-        "messages": [
-          {
-            "role": "system", 
-            "content": "You are a senior cybersecurity analyst. concise, technical, and focus on security risks."
-          },
-          {
-            "role": "user",
-            "content": message
-          }
-        ],
-        "max_tokens": 250, // "max_new_tokens" is renamed to "max_tokens" in this API
-        "temperature": 0.7
+        "model": modelId,  // We call the model id of the model we want to use
+        "messages": _messages,
+        
+          "max_tokens": 250,  // limits the number of words in the response
+          "temperature": 0.7, // controls the randomness of the response  with 0.0 - 0.3
+          // being deterministic and 0.7 - 1.0 being creative 
+        
       });
 
       // Send the Post Request
@@ -48,14 +49,26 @@ class HuggingfaceService {
         Uri.parse(apiUrl),
         headers: headers,
         body: body
-      );
+      ).timeout(const Duration(seconds: 30));
 
       // Check if it worked
       if(response.statusCode == 200){
-        // hugginface returns a list of maps
+        
+        // huggingface returns a result of strings in Json format which we decode into a Map
         final Map<String, dynamic> data = jsonDecode(response.body);
-        return data['choices'][0]['message']['content'];
-      }else{
+        
+        // if choices is found then we skim the top of the list and looking into message key
+        // and content we return the response. 
+        final String botResponse= data['choices'][0]?['message']?['content']?? "No response recieved";
+
+        // 5. Save the assistant's response to history for next time
+        _messages.add({"role": "assistant", "content": botResponse});
+
+        return botResponse;
+      }
+      
+      else{
+        // This returns the status code and meaning of that code when there's an error
         return "Error: ${response.statusCode} - ${response.reasonPhrase}";
       }
     }

@@ -26,7 +26,9 @@ class HuggingfaceService {
     try{
       if (apiToken == null) return "Error: API_KEY not found.";
 
+      // Add user's message to history
       _messages.add({"role": "user", "content": message});
+      
       // Assign the Headers when making a POST request to the API
       final headers = {
         'Authorization': 'Bearer $apiToken',

@@ -65,7 +65,7 @@ class ChatScreen extends ConsumerWidget {
             ),
           ),
 
-          // 2. The Input Area
+          // The Input Area
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(

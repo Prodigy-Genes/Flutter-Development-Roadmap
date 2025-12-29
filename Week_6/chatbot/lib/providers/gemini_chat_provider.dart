@@ -33,7 +33,7 @@ class ChatNotifier extends Notifier<MessageState>{
     state = [...state, userMessage];
 
     // Add a typing state
-    final typingMessage = Message(text: "typing...", date: DateTime.now(), isSentByMe: false, isLoading: true);
+    final typingMessage = Message(text: "...", date: DateTime.now(), isSentByMe: false, isLoading: true);
     state = [...state, typingMessage];
     
     // Call Gemini Service

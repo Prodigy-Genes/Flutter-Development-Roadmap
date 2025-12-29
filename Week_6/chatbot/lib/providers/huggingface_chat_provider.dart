@@ -36,7 +36,7 @@ class ChatNotifier extends Notifier<MessageState>{
 
       // Add a typing state
       final typingState = Message(
-        text: "typing...", 
+        text: "...", 
         date: DateTime.now(), 
         isSentByMe: false,
         isLoading: true

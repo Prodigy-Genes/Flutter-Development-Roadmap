@@ -7,7 +7,7 @@ import "package:flutter_dotenv/flutter_dotenv.dart";
 
 class HuggingfaceService {
   // Address of the model
-  static const String modelId = "HuggingFaceH4/zephyr-7b-beta:featherless-ai";
+  static const String modelId = "openai/gpt-oss-20b:groq";
   static const String apiUrl = "https://router.huggingface.co/v1/chat/completions";
 
   // Load apikey from .env 

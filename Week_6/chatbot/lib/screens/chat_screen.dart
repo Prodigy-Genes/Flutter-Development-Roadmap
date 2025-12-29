@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/gemini_chat_provider.dart';
+import '../providers/huggingface_chat_provider.dart';
 
 
 class ChatScreen extends ConsumerWidget {

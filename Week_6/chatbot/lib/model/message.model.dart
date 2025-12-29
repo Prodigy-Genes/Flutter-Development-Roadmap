@@ -7,3 +7,4 @@ class Message {
   Message({required this.text, required this.date, required this.isLoading, required this.isSentByMe});
 
 }
+

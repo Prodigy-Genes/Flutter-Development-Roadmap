@@ -1,9 +1,29 @@
-import 'package:chatbot/apis/huggingface_service.dart';
+import 'package:chatbot/services/huggingface_service.dart';
 import 'package:chatbot/model/message.model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-typedef MessageState= List<Message>;
+class ChatState {
+  final List<Message> messages;
+  final bool isTyping;
+  // set the constructor
+  ChatState({
+    required this.messages,
+    this. isTyping = false
+  });
 
+  // Helper to update the state immutably
+  ChatState copyWith({
+    List<Message>? messages,
+    bool?  isTyping
+  }){
+    return ChatState(
+      messages: messages?? this.messages,
+      isTyping: isTyping?? this.isTyping
+    );
+  }
+
+
+}
 // A provider to provide an instance of the the Huggingface Service
 final huggingfaceProvider = Provider<HuggingfaceService>((ref){
   return HuggingfaceService();
@@ -11,65 +31,61 @@ final huggingfaceProvider = Provider<HuggingfaceService>((ref){
 
 
 
-class ChatNotifier extends Notifier<MessageState>{
+class ChatNotifier extends Notifier<ChatState>{
   @override
-  MessageState build(){
+  ChatState build(){
     // initial state is empty
-    return [];
+    return ChatState(messages:[]
+    );
   }
 
   // Send a message function
   Future<void> sendMessage(String message) async{
     // Check if message is empty
-    if(message.isEmpty) return;
+    if(message.trim().isEmpty) return;
 
     // Take user message
     final userMessage = Message(
       text: message, 
       date: DateTime.now(), 
       isSentByMe: true,
-      isLoading: false
+      role: 'user'
       );
 
-      // Add user message to state
-      state = [...state, userMessage];
+      //Update the UI wth user's message and set typing state to true
+      state = state.copyWith(
+        messages: [...state.messages, userMessage],
+        isTyping: true
+      );
+      
 
-      // Add a typing state
-      final typingState = Message(
-        text: "...", 
-        date: DateTime.now(), 
-        isSentByMe: false,
-        isLoading: true
+      try{
+        // Call Huggingface service here
+        final huggingfaceservice = ref.read(huggingfaceProvider);
+        final response = await huggingfaceservice.generateResponse(message);
+
+        final aiMessage = Message(
+          text: response?? "I am sorry, I couldn't come up with anything",
+          date: DateTime.now(),
+          isSentByMe: false,
+          role: 'model'
         );
 
-      // Add typing state to state
-      state = [...state, typingState];
-
-
-      // Call Huggingface service here
-      final huggingfaceservice = ref.read(huggingfaceProvider);
-      final response = await huggingfaceservice.generateResponse(message);
-
-      final filteredState = state.where((message) => !message.isLoading).toList();
-
-
-      // Update UI with Huggingface response
-      final huggingfacemessage = Message(
-        text: response??"", // We set this nullable for incase it fails to generate a response
-        date: DateTime.now(), 
-        isSentByMe: false,
-        isLoading: false
+        // Update the UI with the ai's response and set typing state to false
+        state = state.copyWith(
+          messages: [...state.messages, aiMessage],
+          isTyping: false
         );
 
-      // Update the state
-      state= [...filteredState, huggingfacemessage];
-
+      }catch(e){
+        state = state.copyWith(isTyping: false);
+      }
 
   }
 
 }
 
 // A provider for ChatNotifier
-final chatNotifierProvider = NotifierProvider<ChatNotifier, MessageState>((){
+final chatNotifierProvider = NotifierProvider<ChatNotifier, ChatState>((){
   return ChatNotifier();
 });

@@ -1,24 +1,62 @@
 import 'package:chatbot/services/huggingface_service.dart';
 import 'package:chatbot/model/message.model.dart';
+import 'package:chatbot/services/tts_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ChatState {
   final List<Message> messages;
   final bool isTyping;
+  final bool isMuted;
+  final bool isAudioLoading;
+  final String selectedVoice;
+  final String? errorMessage;
   // set the constructor
   ChatState({
     required this.messages,
-    this. isTyping = false
+    this. isTyping = false,
+    this. isMuted = false,
+    this. isAudioLoading = false,
+    this. selectedVoice = 'kore',
+    this .errorMessage
   });
 
   // Helper to update the state immutably
   ChatState copyWith({
     List<Message>? messages,
-    bool?  isTyping
+    bool?  isTyping,
+    bool? isMuted,
+    bool? isAudioLoading,
+    String? selectedVoice,
+    String? errorMessage,
+    bool clearError = false
   }){
     return ChatState(
-      messages: messages?? this.messages,
-      isTyping: isTyping?? this.isTyping
+      messages
+      : messages
+      ?? this.messages,
+      
+      isTyping
+      : isTyping
+      ?? this.isTyping,
+
+      isMuted
+      : isMuted
+      ?? this.isMuted,
+
+      isAudioLoading
+      : isAudioLoading
+      ?? this.isAudioLoading,  
+
+      selectedVoice
+      : selectedVoice 
+      ?? this.selectedVoice,
+      
+      errorMessage: 
+      clearError 
+      ? null 
+      : this.errorMessage,
+      
     );
   }
 
@@ -29,14 +67,37 @@ final huggingfaceProvider = Provider<HuggingfaceService>((ref){
   return HuggingfaceService();
 });
 
-
+// A provider to provide an instance of the tts service
+final ttsService = Provider<TtService>((ref){
+  return TtService();
+});
 
 class ChatNotifier extends Notifier<ChatState>{
   @override
   ChatState build(){
     // initial state is empty
-    return ChatState(messages:[]
+    return ChatState(
+      messages:[],
+      isMuted: ref.read(ttsService).isEnabled,
+      selectedVoice: ref.read(ttsService).selectedVoice 
+
     );
+  }
+
+  // A function to toggle the mute state
+  void toggleMute(){
+    final tts = ref.read(ttsService);
+    tts.toggleTTS();
+    state = state.copyWith(isMuted: !tts.isEnabled);
+  }
+
+  void updateVoice(String voiceName){
+    ref.read(ttsService).setVoice(voiceName);
+  }
+
+  // manually stop any ongoing speech
+  void stopSpeech(){
+    ref.read(ttsService).stop();
   }
 
   // Send a message function
@@ -44,41 +105,75 @@ class ChatNotifier extends Notifier<ChatState>{
     // Check if message is empty
     if(message.trim().isEmpty) return;
 
+    // Call firestore here
+    final firestore = FirebaseFirestore.instance;
+
     // Take user message
-    final userMessage = Message(
+    final userMessage = Message.create(
       text: message, 
-      date: DateTime.now(), 
-      isSentByMe: true,
-      role: 'user'
+      role: MessengerRole.user
       );
 
       //Update the UI wth user's message and set typing state to true
       state = state.copyWith(
         messages: [...state.messages, userMessage],
-        isTyping: true
+        isTyping: true,
+        clearError: true
       );
       
 
       try{
+        // Save user's message to firestore
+        await firestore.collection('chats').doc(userMessage.id).set(userMessage.toMap());
+
         // Call Huggingface service here
-        final huggingfaceservice = ref.read(huggingfaceProvider);
-        final response = await huggingfaceservice.generateResponse(message);
+        final aiData = ref.read(huggingfaceProvider);
+        final response = await aiData.generateResponse(message);
 
-        final aiMessage = Message(
-          text: response?? "I am sorry, I couldn't come up with anything",
-          date: DateTime.now(),
-          isSentByMe: false,
-          role: 'model'
-        );
+        if(response != null && response.isNotEmpty){
+          final aiResponse = Message.create(
+            text: response, 
+            role: MessengerRole.model
+            );
 
-        // Update the UI with the ai's response and set typing state to false
-        state = state.copyWith(
-          messages: [...state.messages, aiMessage],
-          isTyping: false
-        );
+          // Update the Ui
+          state = state.copyWith(
+            messages: [...state.messages, aiResponse],
+            isTyping: false
+          );
 
+          if(!state.isMuted){
+            state = state.copyWith(isAudioLoading: true);
+            try{
+              await ref.read(ttsService).speak(response);
+            }
+            finally{
+              state = state.copyWith(isAudioLoading: false);
+            }
+          }
+
+        }
+
+        
+        
+        
       }catch(e){
-        state = state.copyWith(isTyping: false);
+        String errString = e.toString();
+      
+      // Simplify error message if it's a quota issue
+      if (errString.contains("quota") || errString.contains("limit")) {
+        final RegExp regExp = RegExp(r'(\d+\.?\d*)s');
+        final match = regExp.firstMatch(errString);
+        final seconds = match != null ? "${double.tryParse(match.group(1)!)?.ceil()}s" : "30s";
+        errString = "Quota exceeded. Try again in $seconds.";
+      }
+
+      state = state.copyWith(
+        isTyping: false,
+        isAudioLoading: false,
+        errorMessage: errString.toString()
+        );
+        
       }
 
   }

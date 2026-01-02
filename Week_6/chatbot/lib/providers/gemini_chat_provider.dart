@@ -3,6 +3,7 @@
 import 'package:chatbot/services/gemini_service.dart';
 import 'package:chatbot/model/message.model.dart';
 import 'package:chatbot/services/tts_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 
@@ -14,6 +15,7 @@ class ChatState {
   final bool isAudioLoading;
   final String selectedVoice;
   final String? errorMessage;
+  final String? currentlySpeakingMessage;
 
   ChatState({
     required this.messages,
@@ -21,7 +23,8 @@ class ChatState {
     this.isMuted = false,
     this.isAudioLoading=false,
     this.errorMessage,
-    this.selectedVoice="Kore"
+    this.selectedVoice="Kore",
+    this.currentlySpeakingMessage
   });
 
   // Helper to update the States immutably
@@ -32,7 +35,9 @@ class ChatState {
     bool? isAudioLoading,
     String? selectedVoice,
     String? errorMessage,
-    bool clearError = false
+    bool clearError = false,
+    String? currentlySpeakingMessage,
+    bool clearCurrentlySpeakingMessage = false
   }){
     return ChatState(
       messages
@@ -58,7 +63,12 @@ class ChatState {
       errorMessage: 
       clearError 
       ? null 
-      : (errorMessage ?? this.errorMessage),
+      : (errorMessage?? this.errorMessage),
+
+      currentlySpeakingMessage: 
+      clearCurrentlySpeakingMessage
+      ? null
+      : (currentlySpeakingMessage?? this.currentlySpeakingMessage)
       );
   }
 } 
@@ -69,6 +79,8 @@ final geminiService = Provider<GeminiService>((ref){
   return GeminiService();
 });
 
+
+// A provider to provide an instance of the tts Service
 final ttsService = Provider<TtService>((ref){
   return TtService();
 });
@@ -106,15 +118,14 @@ class ChatNotifier extends Notifier<ChatState>{
     // Check if message is empty
     if(message.trim().isEmpty) return;
 
-
+    // Call in a use firestore here to keep chats persistent
+    final firestore = FirebaseFirestore.instance;
+    
     // Take user message
-    final userMessage = Message(
-      text: message, 
-      date: DateTime.now(), 
-      isSentByMe: true, 
-      role: 'user'
-      
-    );
+    final userMessage = Message.create(
+      text: message,  
+      role: MessengerRole.user, 
+      );
 
     // clear previous errors and update the state with user message and set typing to true
     state = state.copyWith(
@@ -124,36 +135,44 @@ class ChatNotifier extends Notifier<ChatState>{
     );
     
     try{
-      final geminiservice = ref.read(geminiService);
-      final response = await geminiservice.generateResponse(message);
+      // Save User Message to Firestore using its internal id
+      await firestore.collection('chats').doc(userMessage.id).set(userMessage.toMap());
+
+      // Get Gemini response
+      final response = await ref.read(geminiService).generateResponse(message);
 
       // Check for null
-      if (response == null || response.isEmpty) {
-        throw Exception("I returned an empty response. This usually happens when you make an inappropriate prompt.");
-      }
+      if (response != null && response.isNotEmpty) {
+        // Use factory method for AI Message
+        final aiResponse = Message.create(
+          text: response, 
+          role: MessengerRole.model
+          );
 
-      final aiMessage = Message(
-        text: response, 
-        date: DateTime.now(), 
-        isSentByMe: false, 
-        role: 'model'
-      );
+          // Save AI response to Firestore
+          await firestore.collection('chats').doc(aiResponse.id).set(aiResponse.toMap());
 
-      // Update the state with ai response and set typing state to false
-      state = state.copyWith(
-        messages: [...state.messages, aiMessage],
-        isTyping: false
-      );
+          // Update UI state
+          state = state.copyWith(
+            messages: [...state.messages, aiResponse],
+            isTyping: false
+          );
 
-      // Trigger the text to speech feature if the app isnt muted
-      if(!state.isMuted){
-        state = state.copyWith(isAudioLoading: true);
-        try {
-          await ref.read(ttsService).speak(response);
-        } finally {
-          // ALWAYS set to false regardless of success or failure
-          state = state.copyWith(isAudioLoading: false);
-        }
+          // Trigger the speech feature if the app isn't muted
+          if(!state.isMuted){
+            state = state.copyWith(
+              isAudioLoading: true, 
+              currentlySpeakingMessage: aiResponse.id);
+            try{
+              await ref.read(ttsService).speak(response);
+              }
+              finally{
+                state = state.copyWith(
+                  isAudioLoading: false,
+                  clearCurrentlySpeakingMessage: true
+                  );
+              }
+          }
       }
 
     }catch(e){

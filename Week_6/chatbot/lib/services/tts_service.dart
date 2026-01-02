@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:audioplayers/audioplayers.dart';
 
 class TtService {
-  final AudioPlayer _audioPlayer = AudioPlayer();
+  final AudioPlayer _audioPlayer = AudioPlayer(); // This is an engine that plays the sound
   bool _isEnabled = true;
   // Tried using the firebase ai logic's SDK but there was a problem in it effectlively handling 
   // the tts appropriately so, I decided to switch back and use the normal http calls to 
@@ -40,16 +40,16 @@ class TtService {
     }
   }
 
-  /// Sends the text to Gemini TTS API with exponential backoff retries
-  
+  /// Sends the text to Gemini TTS API
   Future<void> speak(String text) async {
+    // Checks if the tts is enabled or text is empty 
     if (!_isEnabled || text.isEmpty) return;
 
     int retryCount = 0;
-    // Maximum number of retires is set here
+    // Maximum number of retries is set here
     const int maxRetries = 5;
 
-    // Set a while loopto keep it making a network request until the max  number of retries
+    // Set a while loop to keep it making a network request until the max  number of retries
     // is up.
     while (retryCount <= maxRetries) {
       try {
@@ -98,6 +98,7 @@ class TtService {
                 final String? base64Audio = audioPart['inlineData']?['data'];
                 if (base64Audio != null) {
                   final Uint8List pcmBytes = base64Decode(base64Audio);
+                  
                   final wavBytes = _createWavHeader(pcmBytes, 24000);
                   await _audioPlayer.play(BytesSource(wavBytes));
                   return; // Success
@@ -116,6 +117,7 @@ class TtService {
           rethrow;
         }
         
+        // This gives the server a breathing room with an exponential backoff
         final delay = Duration(seconds: 1 << retryCount);
         await Future.delayed(delay);
         retryCount++;
@@ -123,6 +125,8 @@ class TtService {
     }
   }
 
+  // When Gemini sends audio back it is usually in raw PCM - Pulse Code Manipulation
+  // And that is why this block converts that into WAV - WaveForm HEADER
   Uint8List _createWavHeader(Uint8List pcmData, int sampleRate) {
     final int channels = 1;
     final int bitDepth = 16;

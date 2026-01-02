@@ -1,3 +1,4 @@
+import 'package:chatbot/components/audio_visualizer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/gemini_chat_provider.dart';
@@ -51,7 +52,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       if (previous?.messages.length != next.messages.length || 
           next.isTyping || 
           next.isAudioLoading) {
-        Future.delayed(const Duration(milliseconds: 100), _scrolltobottom);
+        WidgetsBinding.instance.addPostFrameCallback((_) => _scrolltobottom());
       }
     });
 
@@ -132,16 +133,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               itemCount: messages.length,
               itemBuilder: (context, index) {
                 final message = messages[index];
+                final bool isSpeaking = chatState.currentlySpeakingMessage == message.id;
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: Align(
-                    // I use ALign here to show the chat bubbles in different positions depending
-                    // on who sent the message
-                    alignment: message.isSentByMe
-                        ? Alignment.centerRight 
-                        : Alignment.centerLeft,
+                  
+                  child: Row(
+                    mainAxisAlignment: message.isSentByMe
+                    ? MainAxisAlignment.end
+                    : MainAxisAlignment.start,
                     
-                    child: Container(
+                    children: [
+                      if(!message.isSentByMe && isSpeaking) const AudioVisualizer(),
+                    Container(
                       constraints: BoxConstraints(
                         maxWidth: MediaQuery.of(context).size.width * 0.7,
                       ),
@@ -165,6 +168,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                             ),
                       ),
                     ),
+                    if (message.isSentByMe && isSpeaking) const AudioVisualizer(),
+                    ]
                   ),
                 );
               },

@@ -1,7 +1,9 @@
+import 'package:chatbot/services/cache_service.dart';
+import 'package:chatbot/services/firestore_service.dart';
 import 'package:chatbot/services/huggingface_service.dart';
 import 'package:chatbot/model/message.model.dart';
 import 'package:chatbot/services/tts_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class ChatState {
@@ -72,9 +74,19 @@ final ttsService = Provider<TtService>((ref){
   return TtService();
 });
 
+final firestoreService = Provider<FirestoreService>((ref){
+  return FirestoreService();
+});
+
+final cacheService = Provider<CacheService>((ref){
+  return CacheService();
+});
+
 class ChatNotifier extends Notifier<ChatState>{
+  
   @override
   ChatState build(){
+    _init();
     // initial state is empty
     return ChatState(
       messages:[],
@@ -82,6 +94,23 @@ class ChatNotifier extends Notifier<ChatState>{
       selectedVoice: ref.read(ttsService).selectedVoice 
 
     );
+  }
+
+  Future<void> _init() async{
+    final local = await ref.read(cacheService).loadChat();
+    if(local.isNotEmpty){
+      state = state.copyWith(messages: local);
+    }
+
+    final user = FirebaseAuth.instance.currentUser;
+    if(user != null){
+      final remote = await ref.read(firestoreService).loadMessages(user.uid);
+      if(remote.isNotEmpty){
+        state = state.copyWith(messages: remote);
+        // Update the local data with fresh cloud data
+        await ref.read(cacheService).saveChat(remote);
+      }
+    }
   }
 
   // A function to toggle the mute state
@@ -102,11 +131,14 @@ class ChatNotifier extends Notifier<ChatState>{
 
   // Send a message function
   Future<void> sendMessage(String message) async{
+    // Check if user is logged in
+    final user = FirebaseAuth.instance.currentUser;
+    if(user == null){
+      state = state.copyWith(errorMessage: "Please login");
+      return;
+    }
     // Check if message is empty
-    if(message.trim().isEmpty) return;
-
-    // Call firestore here
-    final firestore = FirebaseFirestore.instance;
+    if(message.trim().isEmpty) return;    
 
     // Take user message
     final userMessage = Message.create(
@@ -120,12 +152,12 @@ class ChatNotifier extends Notifier<ChatState>{
         isTyping: true,
         clearError: true
       );
+
+      await ref.read(firestoreService).saveMessage(user.uid, userMessage);
+      await ref.read(cacheService).saveChat(state.messages);
       
 
       try{
-        // Save user's message to firestore
-        await firestore.collection('chats').doc(userMessage.id).set(userMessage.toMap());
-
         // Call Huggingface service here
         final aiData = ref.read(huggingfaceProvider);
         final response = await aiData.generateResponse(message);
@@ -141,6 +173,9 @@ class ChatNotifier extends Notifier<ChatState>{
             messages: [...state.messages, aiResponse],
             isTyping: false
           );
+
+          await ref.read(firestoreService).saveMessage(user.uid, userMessage);
+          await ref.read(cacheService).saveChat(state.messages);
 
           if(!state.isMuted){
             state = state.copyWith(isAudioLoading: true);
@@ -177,6 +212,8 @@ class ChatNotifier extends Notifier<ChatState>{
       }
 
   }
+
+  
 
 }
 

@@ -1,4 +1,5 @@
 import 'package:chatbot/screens/chat_screen.dart';
+import 'package:chatbot/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,8 +15,20 @@ Future<void> main() async{
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  final container = ProviderContainer();
+
+  try{
+    await container.read(authServiceProvider).init();
+  }catch(e){
+    print("Auth Initialization failed: $e");
+  }
+
   await getapi();
-  runApp(const MyApp());
+  runApp(UncontrolledProviderScope(
+    container: container,
+    child: const MyApp())
+    );
 }
 
 class MyApp extends StatelessWidget {
@@ -23,8 +36,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ProviderScope(
-      child: MaterialApp(
+    return MaterialApp(
         title: 'Flutter Demo',
         theme: ThemeData(
           
@@ -32,7 +44,6 @@ class MyApp extends StatelessWidget {
         ),
         debugShowCheckedModeBanner: false,
         home: ChatScreen(),
-      ),
     );
   }
 }

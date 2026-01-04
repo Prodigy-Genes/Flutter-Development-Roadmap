@@ -6,7 +6,8 @@
 .DS_Store
 .atom/
 lib/firebase_options.dart
-
+android/
+ios/
 .build/
 .buildlog/
 .env
@@ -15,6 +16,7 @@ lib/firebase_options.dart
 .swiftpm/
 migrate_working_dir/
 firebase.json
+
 
 # IntelliJ related
 *.iml

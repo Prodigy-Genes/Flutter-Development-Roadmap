@@ -1,7 +1,9 @@
 import 'package:chatbot/model/user.model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService{
@@ -10,7 +12,9 @@ class AuthService{
 
   // Initialise the service 
   Future<void> init() async{
-    await _googleSignIn.initialize();
+    await _googleSignIn.initialize(
+      serverClientId: dotenv.env['WEB_CLIENT_ID']
+    );
   }
 
 
@@ -55,12 +59,13 @@ class AuthService{
       final UserCredential userCredential = await _auth.signInWithCredential(credential);
 
       if(userCredential.user != null){
+        //print("Auth success! Syncing to Firestore for UID: ${userCredential.user!.uid}");
         await _syncUserProfile(userCredential.user!);
       }
 
       return userCredential;
     }catch(e){
-      print("Login Error: $e");
+      //print("Login Error: $e");
       return null;
       
     }
@@ -68,7 +73,8 @@ class AuthService{
   }
 
   Future<void> _syncUserProfile(User firebaseUser) async{
-    final userRef = _db.collection('users').doc(firebaseUser.uid);
+    try{
+      final userRef = _db.collection('users').doc(firebaseUser.uid);
 
     // Create custom model from firebase User data
     final newUser = UserModel(
@@ -79,6 +85,11 @@ class AuthService{
       createdAt: DateTime.now()
       );
       await userRef.set(newUser.toMap(), SetOptions(merge: true));
+      //print("Firestore Sync Complete!");
+    }catch(e){
+      //print("Firestore Sync ERROR: $e");
+    }
+    
   }
 
   Future<void> signout() async{
@@ -90,3 +101,9 @@ class AuthService{
 final authServiceProvider = Provider((ref){
   return AuthService();
 });
+
+final authStateProvider = StreamProvider((ref){
+  return ref.watch(authServiceProvider).authStateChanges;
+});
+
+final loginLoadingProvider = StateProvider<bool>((ref) => false);

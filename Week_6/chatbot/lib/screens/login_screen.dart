@@ -2,18 +2,22 @@ import 'package:chatbot/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class MyWidget extends ConsumerWidget {
-  const MyWidget({super.key});
+class LoginScreen extends ConsumerWidget {
+  const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isLoading = ref.watch(loginLoadingProvider);
     return Scaffold(
-      backgroundColor: Colors.grey[900], // Dark background for the Emerald to pop
+      backgroundColor: const Color.fromARGB(255, 104, 162, 209), // Dark background for the Emerald to pop
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.auto_awesome, size: 80, color: Colors.lightGreen),
+            Image.asset(
+              'assets/icons/logo.png',
+              width: 142,
+              height: 142),
             const SizedBox(height: 24),
             const Text(
               "Prodigygenes.ai",
@@ -22,24 +26,88 @@ class MyWidget extends ConsumerWidget {
             const SizedBox(height: 8),
             Text(
               "Sign in to use Me!",
-              style: TextStyle(color: Colors.grey[400], fontSize: 16),
+              style: TextStyle(color: Colors.black, fontSize: 16),
             ),
             const SizedBox(height: 48),
             
             // The Login Button
-            ElevatedButton.icon(
-              onPressed: () => ref.read(authServiceProvider).signinWithGoogle(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+            SizedBox(
+              width: 250,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: isLoading 
+                  ? null // Disable button while loading
+                  : () async {
+                      // Start loading
+                      ref.read(loginLoadingProvider.notifier).state = true;
+                      
+                      try {
+                        final userCredential = await ref.read(authServiceProvider).signinWithGoogle();
+                        await ref.read(authServiceProvider).signinWithGoogle();
+                        if(!context.mounted) return;
+
+                        if (userCredential != null && userCredential.user != null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Successfully logged in!"),
+                              backgroundColor: Colors.green,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        } else {
+                          // 3. User cancelled or something went wrong without throwing
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Login cancelled or failed."),
+                              backgroundColor: Colors.orange,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      } catch (e){
+                        if(!context.mounted) return;
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("CRITICAL ERROR: $e"), 
+                          backgroundColor: Colors.red, 
+                          duration: Duration(seconds: 1), 
+                          behavior: SnackBarBehavior.floating,
+                          )
+                      );
+                      }
+                      
+                      finally {
+                        // Stop loading (even if it fails or user cancels)
+                        ref.read(loginLoadingProvider.notifier).state = false;
+                      }
+                    },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                ),
+                child: isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.black,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/icons/google.png',
+                            height: 24,
+                          ),
+                          const SizedBox(width: 12),
+                          const Text("Sign in with Google"),
+                        ],
+                      ),
               ),
-              icon: Image.network(
-                'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg',
-                height: 24,
-              ),
-              label: const Text("Sign in with Google"),
             ),
           ],
         ),

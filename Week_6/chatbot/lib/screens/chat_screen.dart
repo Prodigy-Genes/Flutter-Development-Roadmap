@@ -1,4 +1,5 @@
 import 'package:chatbot/components/audio_visualizer.dart';
+import 'package:chatbot/components/user_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/gemini_chat_provider.dart';
@@ -60,7 +61,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("AI Chatbot"),
+        leading: 
+            // Mute/Unmute Toggle (Volume Icon)
+            IconButton(
+              
+              onPressed: () => ref.read(chatNotifierProvider.notifier).toggleMute(), 
+              icon: Icon(
+                chatState.isMuted
+                ? Icons.volume_off
+                : Icons.volume_up
+              ),
+              ),
+
         actions: [
           // Voice selection drop down
           PopupMenuButton<String>(
@@ -95,16 +107,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
             ),
 
-            // Mute/Unmute Toggle (Volume Icon)
-            IconButton(
-              
-              onPressed: () => ref.read(chatNotifierProvider.notifier).toggleMute(), 
-              icon: Icon(
-                chatState.isMuted
-                ? Icons.volume_off
-                : Icons.volume_up
-              ),
+            Padding(
+              padding: EdgeInsets.only(right: 16.0),
+              child: UserAvatar(radius: 15,),
               )
+            
         ]
             ),
       body: Column(

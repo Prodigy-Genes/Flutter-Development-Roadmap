@@ -1,3 +1,4 @@
+import 'package:chatbot/providers/gemini_chat_provider.dart';
 import 'package:chatbot/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,7 +10,7 @@ class LoginScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isLoading = ref.watch(loginLoadingProvider);
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 104, 162, 209), // Dark background for the Emerald to pop
+      backgroundColor: const Color.fromARGB(255, 104, 162, 209), 
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -48,12 +49,16 @@ class LoginScreen extends ConsumerWidget {
 
                         // Check if user was able to log in
                         if (userCredential != null && userCredential.user != null) {
+                          ref.read(chatNotifierProvider.notifier).loadMessages();
+                          
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text("Successfully logged in!"),
                               backgroundColor: Colors.green,
                               behavior: SnackBarBehavior.floating,
                             ),
+
+                                            
                           );
                         } else {
                           // if something goes wrong

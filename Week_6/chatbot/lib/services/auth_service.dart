@@ -93,7 +93,9 @@ class AuthService{
     
   }
 
-  Future<void> signout() async{
+  Future<void> signout(WidgetRef ref) async{
+    ref.read(loginLoadingProvider.notifier).state = false;
+
     await _googleSignIn.signOut();
     await _auth.signOut();
   }

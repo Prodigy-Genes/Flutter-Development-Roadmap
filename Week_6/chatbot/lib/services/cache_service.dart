@@ -32,5 +32,10 @@ class CacheService {
     return decodeData.map((m)=> Message.fromMap(m)).toList();
   }
 
+  Future<void>clearCache() async{
+    final pref = await SharedPreferences.getInstance();
+    await pref.remove(cacheKey);
+  }
+
 }
 

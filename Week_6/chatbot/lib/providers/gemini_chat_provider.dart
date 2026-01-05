@@ -153,6 +153,29 @@ class ChatNotifier extends Notifier<ChatState>{
     ref.read(ttsService).stop();
   }
 
+  Future<void> clearCache() async {
+  // Wipe the local SharedPreferences
+  await ref.read(cacheService).clearCache();
+  
+  // Wipe the UI state (reset list to empty)
+  state = state.copyWith(messages: []);
+}
+
+  Future<void> loadMessages() async {
+  final user = FirebaseAuth.instance.currentUser;
+  
+  if (user != null) {
+    // Fetch from Firestore
+    final remoteMessages = await ref.read(firestoreService).loadMessages(user.uid); 
+    
+    // Update the State so the UI refreshes
+    state = state.copyWith(messages: remoteMessages);
+    
+    // Sync the local cache
+    await ref.read(cacheService).saveChat(remoteMessages);
+  }
+}
+
   Future<void> sendMessage(String message) async{
 
     // Check if user is logged in

@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chatbot/providers/gemini_chat_provider.dart';
 import 'package:chatbot/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,7 +18,10 @@ class UserAvatar extends ConsumerWidget {
 
         return GestureDetector(
           onTap: () {
-            ref.read(authServiceProvider).signout();
+            ref.read(chatNotifierProvider.notifier).clearCache();
+
+            ref.read(authServiceProvider).signout(ref);
+            
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text("Sign out successful"),

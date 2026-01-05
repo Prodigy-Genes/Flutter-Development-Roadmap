@@ -218,6 +218,6 @@ class ChatNotifier extends Notifier<ChatState>{
 }
 
 // A provider for ChatNotifier
-final chatNotifierProvider = NotifierProvider<ChatNotifier, ChatState>((){
-  return ChatNotifier();
-});
+//final chatNotifierProvider = NotifierProvider<ChatNotifier, ChatState>((){
+  //return ChatNotifier();
+//});

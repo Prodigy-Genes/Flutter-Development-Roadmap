@@ -30,7 +30,8 @@ Future<void> main() async{
   }
 
   
-  runApp(UncontrolledProviderScope(
+  runApp(
+    UncontrolledProviderScope(
     container: container,
     child: const MyApp())
     );

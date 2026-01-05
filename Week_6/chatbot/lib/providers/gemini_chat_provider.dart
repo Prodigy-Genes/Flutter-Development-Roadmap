@@ -5,7 +5,7 @@ import 'package:chatbot/model/message.model.dart';
 import 'package:chatbot/services/tts_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:chatbot/services/auth_service.dart';
 
 // Create a ChatState for the Messages model
 class ChatState {
@@ -100,8 +100,14 @@ class ChatNotifier extends Notifier<ChatState>{
   // Set up the initial build
   @override
   ChatState build(){
-    // We load the init function first on uptime of the app
-    _init();
+    // Called authStateProvider in the initial build method 
+    // to monitor the authentication state of each user
+    // Once a user's auth state changed it rebuilt itself immediately
+    ref.watch(authStateProvider);
+
+    // This also fetched data as soon as app was up
+    // Doing that keeps the data for each user consistent 
+    Future.microtask(()=>_init());
     return ChatState(
       messages: [],// Set initial state empty
       isMuted: !ref.read(ttsService).isEnabled,
@@ -121,18 +127,7 @@ class ChatNotifier extends Notifier<ChatState>{
     }
 
     // Sync from firestore
-    final user = FirebaseAuth.instance.currentUser;
-    // We check to see if user is logged in
-    if(user != null){
-      // access firestore data via the user's uid assigned by firebaseAuth
-      final remote = await ref.read(firestoreService).loadMessages(user.uid); 
-      if(remote.isNotEmpty){
-        // As long as data isnt empty we assign that messages
-        state = state.copyWith(messages: remote);
-        // update cache with fresh cloud data
-        await ref.read(cacheService).saveChat(remote);
-      }
-    }
+    await loadMessages();
   }
 
   // A function to toggle the mute state
@@ -165,14 +160,18 @@ class ChatNotifier extends Notifier<ChatState>{
   final user = FirebaseAuth.instance.currentUser;
   
   if (user != null) {
+    //print("DEBUG: Starting Firestore fetch for UID: ${user.uid}");
     // Fetch from Firestore
     final remoteMessages = await ref.read(firestoreService).loadMessages(user.uid); 
-    
+    //print("DEBUG: Messages Received: ${remoteMessages.length} items");
     // Update the State so the UI refreshes
     state = state.copyWith(messages: remoteMessages);
     
     // Sync the local cache
     await ref.read(cacheService).saveChat(remoteMessages);
+    
+  }else{
+    //print("DEBUG: loadMessages called but NO USER logged in");
   }
 }
 

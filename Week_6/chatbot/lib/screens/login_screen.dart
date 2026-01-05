@@ -1,4 +1,3 @@
-import 'package:chatbot/providers/gemini_chat_provider.dart';
 import 'package:chatbot/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -43,33 +42,19 @@ class LoginScreen extends ConsumerWidget {
                       ref.read(loginLoadingProvider.notifier).state = true;
                       
                       try {
-                        final userCredential = await ref.read(authServiceProvider).signinWithGoogle();
                         await ref.read(authServiceProvider).signinWithGoogle();
+
                         if(!context.mounted) return;
 
-                        // Check if user was able to log in
-                        if (userCredential != null && userCredential.user != null) {
-                          ref.read(chatNotifierProvider.notifier).loadMessages();
-                          
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Successfully logged in!"),
-                              backgroundColor: Colors.green,
-                              behavior: SnackBarBehavior.floating,
-                            ),
-
-                                            
-                          );
-                        } else {
-                          // if something goes wrong
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Login cancelled or failed."),
-                              backgroundColor: Colors.orange,
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        }
+                        ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("SUCCESS"), 
+                          backgroundColor: Colors.green, 
+                          duration: Duration(seconds: 1), 
+                          behavior: SnackBarBehavior.floating,
+                          )
+                      );
+                        
                       } catch (e){
                         if(!context.mounted) return;
 

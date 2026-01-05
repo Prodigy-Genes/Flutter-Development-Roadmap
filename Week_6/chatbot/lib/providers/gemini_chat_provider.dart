@@ -27,7 +27,7 @@ class ChatState {
     this.currentlySpeakingMessage
   });
 
-  // Helper to update the States immutably
+  // Using copyWith to update states immutably
   ChatState copyWith({
     List<Message>? messages,
     bool? isTyping,
@@ -85,10 +85,12 @@ final ttsService = Provider<TtService>((ref){
   return TtService();
 });
 
+// A provider to provide an instance of the firestore Service
 final firestoreService = Provider<FirestoreService>((ref){
   return FirestoreService();
 });
 
+// This provider provides an instance of the cache service
 final cacheService = Provider<CacheService>((ref){
   return CacheService();
 });
@@ -98,6 +100,7 @@ class ChatNotifier extends Notifier<ChatState>{
   // Set up the initial build
   @override
   ChatState build(){
+    // We load the init function first on uptime of the app
     _init();
     return ChatState(
       messages: [],// Set initial state empty
@@ -112,14 +115,19 @@ class ChatNotifier extends Notifier<ChatState>{
 
     final local = await ref.read(cacheService).loadChat();
     if(local.isNotEmpty){
+      // if local is not empty then we assign the local messages so messages in the app 
+      // is no longer empty
       state = state.copyWith(messages: local);
     }
 
     // Sync from firestore
     final user = FirebaseAuth.instance.currentUser;
+    // We check to see if user is logged in
     if(user != null){
-      final remote = await ref.read(firestoreService).loadMessages(user.uid);
+      // access firestore data via the user's uid assigned by firebaseAuth
+      final remote = await ref.read(firestoreService).loadMessages(user.uid); 
       if(remote.isNotEmpty){
+        // As long as data isnt empty we assign that messages
         state = state.copyWith(messages: remote);
         // update cache with fresh cloud data
         await ref.read(cacheService).saveChat(remote);
@@ -130,12 +138,14 @@ class ChatNotifier extends Notifier<ChatState>{
   // A function to toggle the mute state
   void toggleMute(){
     final tts = ref.read(ttsService);
-    tts.toggleTTS();
+    tts.toggleTTS(); 
     state = state.copyWith(isMuted: !tts.isEnabled);
   }
 
   void updateVoice(String voiceName){
     ref.read(ttsService).setVoice(voiceName);
+
+    state = state.copyWith(selectedVoice: voiceName);
   }
 
   // manually stop any ongoing speech
@@ -162,13 +172,13 @@ class ChatNotifier extends Notifier<ChatState>{
       role: MessengerRole.user, 
       );
 
-    // clear previous errors and update the state with user message and set typing to true
+    // clear previous errors incase there is any and update the state with user message and set typing to true
     state = state.copyWith(
       messages: [...state.messages, userMessage],
       isTyping: true,
       clearError: true
     );
-
+    // Store user message in firestore and cache 
     await ref.read(firestoreService).saveMessage(user.uid, userMessage);
     await ref.read(cacheService).saveChat(state.messages);
 
@@ -179,13 +189,11 @@ class ChatNotifier extends Notifier<ChatState>{
 
       // Check for null
       if (response != null && response.isNotEmpty) {
-        // Use factory method for AI Message
+        // Take the message 
         final aiResponse = Message.create(
           text: response, 
           role: MessengerRole.model
           );
-
-          
 
           // Update UI state
           state = state.copyWith(
@@ -193,6 +201,7 @@ class ChatNotifier extends Notifier<ChatState>{
             isTyping: false
           );
 
+          // Store ai response in firestore and cache
           await ref.read(firestoreService).saveMessage(user.uid, aiResponse);
           await ref.read(cacheService).saveChat(state.messages);
 
@@ -200,9 +209,11 @@ class ChatNotifier extends Notifier<ChatState>{
           if(!state.isMuted){
             state = state.copyWith(
               isAudioLoading: true, 
+              // This is for a component in the UI that tracks and shows beside which message 
+              // is currently being played using message id
               currentlySpeakingMessage: aiResponse.id);
             try{
-              await ref.read(ttsService).speak(response);
+              await ref.read(ttsService).speak(response);// play the audio
               }
               finally{
                 state = state.copyWith(

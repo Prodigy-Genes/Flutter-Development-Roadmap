@@ -9,6 +9,7 @@ class AudioVisualizer extends ConsumerStatefulWidget {
 
 }
 
+// Using a singleTicker which tells flutter to refresh the screen at a specific number of frames per second
 class _AudioVisualizerState extends ConsumerState<AudioVisualizer> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
@@ -17,9 +18,9 @@ class _AudioVisualizerState extends ConsumerState<AudioVisualizer> with SingleTi
     super.initState();
     // Start the looping animation immediately
     _controller = AnimationController(
-      vsync: this,
+      vsync: this, // only run when the widget is actually visible on the screen
       duration: const Duration(milliseconds: 500)
-      )..repeat(reverse: true);  
+      )..repeat(reverse: true);  // this animates the screen creating a pulsing effect
     }
 
   @override
@@ -33,11 +34,12 @@ class _AudioVisualizerState extends ConsumerState<AudioVisualizer> with SingleTi
   Widget build(BuildContext context){
     return Row(
       mainAxisSize: MainAxisSize.min,
+      // Generate four bars with their indexes 
       children : List.generate(4, (index){
         return AnimatedBuilder(
           animation: _controller, 
           builder: (context, child){
-            // We use different curves for each bar to make it look like a real wave
+            // This checks if bars are even or odd with a particular set of behavior
             double waveValue = (index % 2 ==0 )? _controller.value : 1.0 - _controller.value;
 
             return Container(

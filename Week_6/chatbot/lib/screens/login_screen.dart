@@ -46,6 +46,7 @@ class LoginScreen extends ConsumerWidget {
                         await ref.read(authServiceProvider).signinWithGoogle();
                         if(!context.mounted) return;
 
+                        // Check if user was able to log in
                         if (userCredential != null && userCredential.user != null) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -55,7 +56,7 @@ class LoginScreen extends ConsumerWidget {
                             ),
                           );
                         } else {
-                          // 3. User cancelled or something went wrong without throwing
+                          // if something goes wrong
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text("Login cancelled or failed."),

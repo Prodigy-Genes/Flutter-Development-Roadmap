@@ -2,7 +2,7 @@ class UserModel{
   final String uid;
   final String email;
   final String displayName;
-  final String? profilePicture; // URL from Google
+  final String? profilePicture; // URL from Google made nullable incase profile returns null
   final DateTime createdAt;
 
   UserModel({

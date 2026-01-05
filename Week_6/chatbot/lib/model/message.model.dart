@@ -1,6 +1,7 @@
 
 import 'package:uuid/uuid.dart';
 
+// Using enum to keep consistency everywhere in the code.
 enum MessengerRole { user, model}
 class Message {
   final String id; // Unique Id for firestore
@@ -8,6 +9,7 @@ class Message {
   final DateTime date;
   final MessengerRole role; // user or model
 
+  // This is a getter for the UI
   bool get isSentByMe => role == MessengerRole.user;
 
 
@@ -18,10 +20,13 @@ class Message {
     required this.role, 
     });
 
-  // Automatically generate an id for each Message model
+  // Since we will just be updating the text and role fields
   factory Message.create({required String text, required MessengerRole role}){
     return Message
     (
+      // Using Uuid so we are able to generate unique ids for each message
+      // This way even if multiple users sent messages at the same time there would 
+      // be no collison in id assignings.
     id: const Uuid().v4(), 
     text: text, 
     date: DateTime.now(), 
@@ -29,12 +34,12 @@ class Message {
     );
   }
 
-  // Convert Message to Map for JSON storage
+  // Serialization: Convert Message to Map for JSON storage in firestore
   Map<String, dynamic> toMap(){
     return {
       'id': id,
       'text': text,
-      'date': date.toIso8601String(), // We convert to a standardized String format
+      'date': date.toIso8601String(), // We convert to a standardized String format for storing in firestore
       'role': role.name // Saves as user or model
 
     };
@@ -53,7 +58,7 @@ class Message {
 
 
 
-  // CopyWith for state updates
+  // CopyWith for state updates for immutable objects
   Message copyWith ({
     String? id,
     String? text,

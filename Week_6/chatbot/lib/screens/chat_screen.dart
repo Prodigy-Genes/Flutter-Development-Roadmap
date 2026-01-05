@@ -16,14 +16,18 @@ class ChatScreen extends ConsumerStatefulWidget {
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   // Controller here will hold the message the user send on the app
   final TextEditingController _messageController = TextEditingController();
+  // This will handle the scrolling behavior of the app
   final ScrollController _scrollController = ScrollController();
 
 
   void _scrolltobottom(){
+    // We check if there are messages to scroll to
     if(_scrollController.hasClients){
       _scrollController.animateTo(
+        // This moves the scroll counter to the very last message
         _scrollController.position.maxScrollExtent,
         duration: const Duration(milliseconds: 300),
+        // animation starts fast and slows down as it reaches its destination
         curve: Curves.easeOut
        );
     }
@@ -31,6 +35,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   void dispose(){
+    // dispose off the controllers here after they are done this saves memoy leaks
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -41,7 +46,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget build(BuildContext context) {
     
     // Call in the ChatNotifier Provider for  the AI Model
-    final chatState = ref.watch(chatNotifierProvider);
+    final chatState = ref.watch(chatNotifierProvider); // watches for new messages
     final messages = chatState.messages;
 
     // Access the TTS service for voice options
@@ -53,6 +58,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       if (previous?.messages.length != next.messages.length || 
           next.isTyping || 
           next.isAudioLoading) {
+        // This ensures the scroll always falls on the last message in the list
         WidgetsBinding.instance.addPostFrameCallback((_) => _scrolltobottom());
       }
     });
@@ -64,7 +70,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         leading: 
             // Mute/Unmute Toggle (Volume Icon)
             IconButton(
-              
               onPressed: () => ref.read(chatNotifierProvider.notifier).toggleMute(), 
               icon: Icon(
                 chatState.isMuted
@@ -74,7 +79,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ),
 
         actions: [
+
+           Text(chatState.selectedVoice),
           // Voice selection drop down
+         
           PopupMenuButton<String>(
             icon: const Icon(Icons.record_voice_over),
             tooltip: "Select Voice",
@@ -106,7 +114,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             .toList(),
 
             ),
-
             Padding(
               padding: EdgeInsets.only(right: 16.0),
               child: UserAvatar(radius: 15,),
@@ -226,12 +233,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         color: Theme.of(context).cardColor,
         boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, -1))],
       ),
+      // Safe Area is used here so the phone system's UI doesn't interfere with the app
       child: SafeArea(
         child: Row(
           children: [
             Expanded(
               child: TextField(
                 controller: _messageController,
+                // Capitalise the first letter of every sentence in the message
                 textCapitalization: TextCapitalization.sentences,
                 decoration: InputDecoration(
                   hintText: "Send a message...",
@@ -240,6 +249,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
                 ),
                 onSubmitted: (val) => _send(val),
+                keyboardType: TextInputType.text,
               ),
             ),
             const SizedBox(width: 8),
@@ -259,6 +269,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void _send(String text) {
     if (text.trim().isNotEmpty) {
       ref.read(chatNotifierProvider.notifier).sendMessage(text);
+      // clear the message after sending
       _messageController.clear();
     }
   }

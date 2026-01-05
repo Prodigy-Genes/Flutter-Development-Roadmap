@@ -12,6 +12,7 @@ class UserAvatar extends ConsumerWidget {
     final authState = ref.watch(authStateProvider);
     return authState.when(
       data: (user) {
+        // Call the user profile 
         final photoUrl = user?.photoURL;
 
         return GestureDetector(

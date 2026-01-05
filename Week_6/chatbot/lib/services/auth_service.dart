@@ -17,7 +17,7 @@ class AuthService{
     );
   }
 
-
+  // An instance of Firestore
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   // Using stream to monitor the auth state of the user
@@ -35,10 +35,8 @@ class AuthService{
 
       }
 
-      // Trigger authentication flow
-      final GoogleSignInAccount? googleUser = await _googleSignIn.authenticate();
-
-      if(googleUser == null) return null;
+      // Trigger google sign inauthentication flow
+      final GoogleSignInAccount googleUser = await _googleSignIn.authenticate();
 
       // Request authoriztion for access token
       // Requesting basic scopes to get the tokens required by firebasse
@@ -74,6 +72,7 @@ class AuthService{
 
   Future<void> _syncUserProfile(User firebaseUser) async{
     try{
+      // Create a database collection for the user
       final userRef = _db.collection('users').doc(firebaseUser.uid);
 
     // Create custom model from firebase User data
@@ -84,6 +83,8 @@ class AuthService{
       profilePicture: firebaseUser.photoURL, 
       createdAt: DateTime.now()
       );
+      // Then merge the existing data to firestore for everytime user logs in
+      // to prevent exisiting user data
       await userRef.set(newUser.toMap(), SetOptions(merge: true));
       //print("Firestore Sync Complete!");
     }catch(e){
@@ -98,12 +99,14 @@ class AuthService{
   }
 }
 
+// This is the root state provider so the authService can be used anywhere in the app
 final authServiceProvider = Provider((ref){
   return AuthService();
 });
 
+// This state monitors the auth state of the user
 final authStateProvider = StreamProvider((ref){
   return ref.watch(authServiceProvider).authStateChanges;
 });
-
+// This creates a loading state for the process of authenticating
 final loginLoadingProvider = StateProvider<bool>((ref) => false);

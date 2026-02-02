@@ -24,8 +24,19 @@ app.use(express.json());
 
 // Start the server and listen on the specified PORT
 
-app.get('/', (req: Request, res: Response) => {
-    res.send("Typescript Express Server is running!");
+app.get('/tasks', (req: Request, res: Response) => {
+    res.status(200).json(tasks);
+});
+
+app.post('/tasks', (req: Request, res: Response) =>{
+    const newTask: Task = {
+        id: tasks.length + 1,
+        title: req.body.title,
+        description: req.body.description || null,
+        completed: false
+    };
+    tasks.push(newTask);
+    res.status(201).json(newTask);
 });
 
 app.listen(PORT, () =>{

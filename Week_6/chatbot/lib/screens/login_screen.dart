@@ -42,7 +42,7 @@ class LoginScreen extends ConsumerWidget {
                       ref.read(loginLoadingProvider.notifier).state = true;
                       
                       try {
-                        await ref.read(authServiceProvider).signinWithGoogle();
+                        await ref.read(authServiceProvider).signInWithGoogle();
 
                         if(!context.mounted) return;
 

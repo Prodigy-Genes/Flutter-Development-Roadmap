@@ -8,6 +8,8 @@ interface Task {
     completed: boolean;
 }
 
+
+
 const tasks : Task[] = [
     { id: 1, title: "Sample Task", description: "This is a sample task", completed: false},
     { id: 2, title: "Another Task", description:null, completed: true}

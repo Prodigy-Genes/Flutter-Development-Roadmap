@@ -1,6 +1,9 @@
-import express from 'express';
 import type {Request, Response } from 'express';
 import pool from './db.js';
+import { authGate } from './users.js';
+import type{ AuthRequest } from './users.js';
+import { Router } from 'express';
+
 
 interface Task{
     id: number;
@@ -20,18 +23,15 @@ async function  checkDatabase(){
 
 checkDatabase();
 
-const app = express();
-
+const router : Router = Router();
 const PORT = 3000;
 
-const Middleware = express.json();
-
-app.use(Middleware);
 
 // Fetching tasks from the table
-app.get('/tasks', async(req: Request, res: Response) => {
+router.get('/tasks', authGate, async(req: AuthRequest, res: Response) => {
+    const userId = req.user?.userId;
     try{
-        const result = await pool.query<Task>('SELECT * FROM tasks ORDER BY id ASC');
+        const result = await pool.query<Task>('SELECT * FROM tasks WHERE user_id = $1 ORDER BY id ASC', [userId]);
         res.status(200).json(result.rows);
         
     }catch(e){
@@ -41,16 +41,17 @@ app.get('/tasks', async(req: Request, res: Response) => {
 })
 
 // Fetching a single task
-app.get('/tasks/:id', async(req: Request, res: Response) => {
+router.get('/tasks/:id', authGate, async(req: AuthRequest, res: Response) => {
     const id = parseInt(req.params.id as string);
+    const userId = req.user?.userId;
 
     try{
-        const query = 'SELECT * FROM tasks WHERE id = $1';
+        const query = 'SELECT * FROM tasks WHERE user_id =$1 AND id = $2';
 
-        const result = await pool.query<Task>(query, [id]);
+        const result = await pool.query<Task>(query, [userId, id]);
         
         if(result.rows.length === 0){
-            res.status(404).json({error: 'Task not found'});
+            return res.status(404).json({error: 'Task not found'});
         }
 
         res.status(200).json(result.rows[0]);
@@ -62,12 +63,13 @@ app.get('/tasks/:id', async(req: Request, res: Response) => {
 })
 
 // Adding tasks to the table on supabase
-app.post('/tasks', async(req: Request,  res: Response) => {
+router.post('/tasks', authGate, async(req: AuthRequest,  res: Response) => {
     const {title, description} = req.body;
+    const userId = req.user?.userId;
     try{
-        const query = 'INSERT INTO tasks (title, description) VALUES ($1, $2) RETURNING *';
+        const query = 'INSERT INTO tasks (title, description, user_id)  VALUES ($1, $2, $3 ) RETURNING *';
         
-        const result = await pool.query<Task>(query, [title, description]);
+        const result = await pool.query<Task>(query, [title, description, userId]);
 
         res.status(201).json(result.rows[0]);
     }catch(e){
@@ -77,16 +79,17 @@ app.post('/tasks', async(req: Request,  res: Response) => {
 });
 
 // Update tasks
-app.put('/tasks/:id', async(req: Request, res: Response) => {
+router.put('/tasks/:id', authGate, async(req: AuthRequest, res: Response) => {
     const id = parseInt(req.params.id as string);
     const {title, description, completed} = req.body;
+    const userId = req.user?.userId;
 
     try{
-      const query = 'UPDATE tasks SET title = $1, description = $2, completed = $3 WHERE id = $4 RETURNING *'
+      const query = 'UPDATE tasks SET title = $1, description = $2, completed = $3 WHERE user_id = $4 AND id = $5 RETURNING *'
 
-      const result = await pool.query<Task>(query, [title, description, completed, id]);
+      const result = await pool.query<Task>(query, [title, description, completed, userId, id]);
       if(result.rows.length === 0){
-        res.status(404).json({error: 'Task not found'})
+        return res.status(404).json({error: 'Task not found'})
       }
 
       res.status(200).json(result.rows[0]);
@@ -96,20 +99,18 @@ app.put('/tasks/:id', async(req: Request, res: Response) => {
     }
 })
 
-app.listen(PORT, () => {
-    console.log('Server is running')
-})
 
 // Delete a task
-app.delete('/tasks/:id', async(req: Request, res: Response) => {
+router.delete('/tasks/:id', authGate, async(req: AuthRequest, res: Response) => {
     const id = parseInt(req.params.id as string);
+    const userId = req.user?.userId;
     try{
-      const query = 'DELETE FROM tasks WHERE id = $1 RETURNING *';
+      const query = 'DELETE FROM tasks WHERE user_id = $1 AND id = $2 RETURNING *';
 
-      const result = await pool.query<Task>(query, [id]);
+      const result = await pool.query<Task>(query, [userId,id]);
 
       if(result.rows.length === 0){
-        res.status(404).json({error: 'Task not found'});
+        return res.status(404).json({error: 'Task not found'});
       }
 
       res.status(200).json({message:'Task deleted successfully', result: result.rows[0]});
@@ -119,3 +120,5 @@ app.delete('/tasks/:id', async(req: Request, res: Response) => {
 
     }
 })
+
+export default router

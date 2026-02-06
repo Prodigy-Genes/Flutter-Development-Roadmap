@@ -31,7 +31,7 @@ app.use(Middleware);
 // Fetching tasks from the table
 app.get('/tasks', async(req: Request, res: Response) => {
     try{
-        const result = await pool.query('SELECT * FROM tasks ORDER BY id ASC');
+        const result = await pool.query<Task>('SELECT * FROM tasks ORDER BY id ASC');
         res.status(200).json(result.rows);
         
     }catch(e){
@@ -47,7 +47,7 @@ app.get('/tasks/:id', async(req: Request, res: Response) => {
     try{
         const query = 'SELECT * FROM tasks WHERE id = $1';
 
-        const result = await pool.query(query, [id]);
+        const result = await pool.query<Task>(query, [id]);
         
         if(result.rows.length === 0){
             res.status(404).json({error: 'Task not found'});
@@ -67,7 +67,7 @@ app.post('/tasks', async(req: Request,  res: Response) => {
     try{
         const query = 'INSERT INTO tasks (title, description) VALUES ($1, $2) RETURNING *';
         
-        const result = await pool.query(query, [title, description]);
+        const result = await pool.query<Task>(query, [title, description]);
 
         res.status(201).json(result.rows[0]);
     }catch(e){
@@ -84,7 +84,7 @@ app.put('/tasks/:id', async(req: Request, res: Response) => {
     try{
       const query = 'UPDATE tasks SET title = $1, description = $2, completed = $3 WHERE id = $4 RETURNING *'
 
-      const result = await pool.query(query, [title, description, completed, id]);
+      const result = await pool.query<Task>(query, [title, description, completed, id]);
       if(result.rows.length === 0){
         res.status(404).json({error: 'Task not found'})
       }
@@ -106,7 +106,7 @@ app.delete('/tasks/:id', async(req: Request, res: Response) => {
     try{
       const query = 'DELETE FROM tasks WHERE id = $1 RETURNING *';
 
-      const result = await pool.query(query, [id]);
+      const result = await pool.query<Task>(query, [id]);
 
       if(result.rows.length === 0){
         res.status(404).json({error: 'Task not found'});

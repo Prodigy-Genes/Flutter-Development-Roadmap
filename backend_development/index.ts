@@ -41,6 +41,13 @@ app.use(limiter);
 // This handles the requests and parsing them into json formats for the server
 app.use(express.json());
 
+app.get('/', (req, res) => {
+    res.status(200).json({ 
+        message: "Welcome to my Basic-Crud-Server (BCS) ",
+        documentation: "https://github.com/Prodigy-Genes/Flutter-Development-Roadmap/backend_development" 
+    });
+});
+
 // health Route monitors the state of the server
 app.get('/health', async (req, res) => {
     try {

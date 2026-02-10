@@ -1,5 +1,5 @@
 import type{ Request, Response, NextFunction } from "express";
-import { AppError } from "../utils.js";
+import { AppError } from "../utils/utils.js";
 import logger from "../logger.js";
 
 export const errorHandler = (err: unknown, req: Request, res: Response, next: NextFunction) =>{
@@ -26,8 +26,7 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
 
         if (dbError.code === '23505') {
             return res.status(201).json({
-                status: 'success',
-                message: 'Registration successful. If this is a new email, you can now log in.'
+                 message: 'Registration successful. If this is a new email, you can now log in.'
             });
         }
     }

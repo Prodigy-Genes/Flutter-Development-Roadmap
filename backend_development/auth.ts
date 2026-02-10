@@ -3,8 +3,11 @@ import type { NextFunction, Request, Response } from 'express';
 import pool from './db.js';
 import jwt from 'jsonwebtoken';
 import { Router } from "express";
-import { AppError, asyncHandler } from "./utils.js";
+import { AppError, asyncHandler } from "./utils/utils.js";
 import { promisify } from "node:util";
+import { validate } from "./middleware/validate.js";
+import { loginSchema, signUpSchema } from "./auth_schema.js";
+import { env } from "./utils/env.js";
 
 interface User{
     id: number;
@@ -33,9 +36,6 @@ const verifyAsync = promisify(jwt.verify) as (
 ) => Promise<unknown>;
 
 export const  authGate = asyncHandler( async(req: AuthRequest, res: Response, next: NextFunction) => {
-    //console.log('--- Auth Debug ---');
-    //console.log('Authorization Header:', req.headers['authorization']);
-    //console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
     // Request the Bearer Token
     const authHeader = req.headers['authorization'];
     // Take the actual token
@@ -48,19 +48,15 @@ export const  authGate = asyncHandler( async(req: AuthRequest, res: Response, ne
     // Verify the token
     // If the token is invalid, verifyAsync will naturally "throw" an error
     // and your asyncHandler will catch it and send it to the Safety Net.
-    const decoded = await verifyAsync(token, process.env.JWT_SECRET as string) as JWTPayload;
+    const decoded = await verifyAsync(token, env.JWT_SECRET) as JWTPayload;
 
     req.user =decoded;
     next();
 }); 
 
 // Signup endpoint
-router.post('/signup', asyncHandler(async (req: Request, res: Response) => {
+router.post('/signup', validate(signUpSchema), asyncHandler(async (req: Request, res: Response) => {
     const { email, password } = req.body;
-
-    if(!email || !password){
-        throw new AppError('Email and password are required ', 400)
-    }
 
         const hashedPassword = await bcrypt.hash(password,10);
 
@@ -80,7 +76,7 @@ router.post('/signup', asyncHandler(async (req: Request, res: Response) => {
 
 
 // login endpoint
-router.post('/login', asyncHandler(async(req: Request, res: Response) =>{
+router.post('/login', validate(loginSchema), asyncHandler(async(req: Request, res: Response) =>{
         const {email, password} = req.body;
 
         // Message for all failures
@@ -97,7 +93,7 @@ router.post('/login', asyncHandler(async(req: Request, res: Response) =>{
 
 
         // Compare the plain password with the hashed one
-        const isPasswordValid = await bcrypt.compare(password, user?.password_hash as string);
+        const isPasswordValid = await bcrypt.compare(password, hashToCompare);
 
         if(!user || !isPasswordValid) {
             throw new AppError(authError, 401)
@@ -105,8 +101,8 @@ router.post('/login', asyncHandler(async(req: Request, res: Response) =>{
 
         // Create the JWT
         const token = jwt.sign(
-            {userId: user?.id, email: user?.email},
-            process.env.JWT_SECRET as string,
+            {userId: user.id, email: user.email},
+            env.JWT_SECRET,
             {expiresIn: '1h'}
         );
 

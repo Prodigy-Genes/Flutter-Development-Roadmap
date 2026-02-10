@@ -1,9 +1,12 @@
 import type {NextFunction, Request, Response } from 'express';
 import pool from './db.js';
-import { authGate } from './users.js';
-import type{ AuthRequest } from './users.js';
+import { authGate } from './auth.js';
+import type{ AuthRequest } from './auth.js';
 import { Router } from 'express';
-import { AppError, asyncHandler } from './utils.js';
+import { AppError, asyncHandler } from './utils/utils.js';
+import { createTaskSchema, updateTaskSchema } from './tasks_schema.js';
+import { validate } from './middleware/validate.js';
+
 
 
 interface Task{
@@ -67,12 +70,8 @@ router.get('/tasks/:id', authGate, asyncHandler(async(req: AuthRequest, res: Res
 }))
 
 // Adding tasks to the table on supabase
-router.post('/tasks', authGate,  asyncHandler(async(req: AuthRequest,  res: Response) => {
+router.post('/tasks', authGate, validate(createTaskSchema),  asyncHandler(async(req: AuthRequest,  res: Response) => {
     const {title, description} = req.body;
-
-    if(!title || title.trim === ''){
-        throw new AppError('Title is required', 400);
-    }
 
     const userId = req.user?.userId;
         const query = 'INSERT INTO tasks (title, description, user_id)  VALUES ($1, $2, $3 ) RETURNING *';
@@ -84,17 +83,47 @@ router.post('/tasks', authGate,  asyncHandler(async(req: AuthRequest,  res: Resp
 }));
 
 // Update tasks
-router.put('/tasks/:id', authGate, asyncHandler(async(req: AuthRequest, res: Response) => {
+router.put('/tasks/:id', authGate, validate(updateTaskSchema), asyncHandler(async(req: AuthRequest, res: Response) => {
     const id = parseInt(req.params.id as string);
-    const {title, description, completed} = req.body;
     const userId = req.user?.userId;
+    const updates = req.body;
 
-      const query = 'UPDATE tasks SET title = $1, description = $2, completed = $3 WHERE user_id = $4 AND id = $5 RETURNING *'
+    // Get the keys of the field provided
+    const keys = Object.keys(updates);
 
-      const result = await pool.query<Task>(query, [title, description, completed, userId, id]);
+    if(keys.length === 0){
+        throw new AppError('Atleast one field must be provided for an update', 400);
+    }
+
+    //Build the SET clause: "title = $1, completed = $2"
+    //Using index + 1 because Postgres placeholders start at $1
+     
+    const setClause = keys
+        .map((key, index) => `${key} = $${index + 1}`)
+        .join(', ');
+
+    // Collect the values in the same order as the keys 
+    const values = keys.map(key => updates[key]);
+
+    // Add the UserID and TaskID as the final parameters
+    // Their placeholder numbers will be after the dynamic values
+
+    const userIdPlaceholder = `$${values.length + 1}`;
+    const taskIdPlaceholder = `$${values.length + 2}`;
+    
+    values.push(userId, id);
+
+    const query = `
+    UPDATE tasks SET ${setClause} 
+    WHERE user_id = ${userIdPlaceholder} 
+    AND id = ${taskIdPlaceholder} 
+    RETURNING *
+    `
+
+    const result = await pool.query<Task>(query, values);
       if(result.rows.length === 0){
         throw new AppError('Task not found', 404);
-      }
+    }
 
       res.status(200).json(result.rows[0]);
 }));

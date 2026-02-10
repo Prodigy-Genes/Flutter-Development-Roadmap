@@ -1,7 +1,7 @@
 import { z } from "zod";
-import dotenv from "dotenv";
 import logger from "../logger.js";
 
+// Handle incase of missing or incorrect env variables
 const envSchema = z.object({
     DATABASE_URL: z.string().url("DATABASE_URL must be a valid URL"),
     JWT_SECRET: z.string().min(10, "JWT_SECRET should be at least 10 characters for security"),

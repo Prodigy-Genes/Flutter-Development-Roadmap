@@ -1,8 +1,9 @@
-import type{ Request, Response, NextFunction } from "express";
+import type{ Response, NextFunction } from "express";
 import { AppError } from "../utils/utils.js";
 import logger from "../logger.js";
 
-export const errorHandler = (err: unknown, req: Request, res: Response, next: NextFunction) =>{
+export const errorHandler = (err: unknown, res: Response, next: NextFunction) =>{
+    // We log the error in a file in the project 
     logger.error('Full Error Details: ', err);
 
     // Handle Certain Unique Violations
@@ -32,7 +33,6 @@ export const errorHandler = (err: unknown, req: Request, res: Response, next: Ne
     }
 
     // Fallback for everything else
-    const message = err instanceof Error ? err.message : 'Internal Server Error';
     const isDevelopment = process.env.NODE_ENV === 'development';
     
     res.status(500).json({

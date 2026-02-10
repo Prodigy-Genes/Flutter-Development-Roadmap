@@ -1,6 +1,7 @@
 import express from 'express';
 import type { Request, Response } from 'express';
 
+// Define a task model 
 interface Task {
     id: number;
     title: string;
@@ -9,7 +10,7 @@ interface Task {
 }
 
 
-
+// Create an array of tasks to use
 const tasks : Task[] = [
     { id: 1, title: "Sample Task", description: "This is a sample task", completed: false},
     { id: 2, title: "Another Task", description:null, completed: true}
@@ -37,14 +38,14 @@ app.get("/tasks/:id", (req: Request, res: Response) => {
     if(!task){
         res.status(404).json("{error: 'Task not found'}")
     }
-
-    res.json(task)
-    res.status(200).json({message: 'Task fetched successfully'})
+    // Get the tasks
+    res.status(200).json({message: 'Task fetched successfully', task:task})
 })
 
 // Create a new task
 app.post('/tasks', (req: Request, res: Response) =>{
-    const maxId = tasks.length > 0 ? Math.max(...tasks.map(task => task.id)) : 0
+    // We use this to find out the maximum id number so as to not create duplications
+    const maxId = tasks.length > 0 ? Math.max(...tasks.map(task => task.id)) : 0 
     const newTask: Task = {
         id: maxId + 1,
         title: req.body.title,

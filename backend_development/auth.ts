@@ -9,6 +9,7 @@ import { validate } from "./middleware/validate.js";
 import { loginSchema, signUpSchema } from "./auth_schema.js";
 import { env } from "./utils/env.js";
 
+// Define a model structure for users
 interface User{
     id: number;
     email: string;
@@ -17,6 +18,7 @@ interface User{
 }
 
 // Define what a decoded JWT Payload looks like
+// Describes the contents
 interface JWTPayload{
     userId: number;
     email: string;
@@ -30,15 +32,17 @@ export interface AuthRequest extends Request{
 const router : Router = Router();
 
 // We define the function signature explicitly
+// We also convert the jwt.verify to a promise version hence escaping callbacks
 const verifyAsync = promisify(jwt.verify) as (
     token: string, 
     secret: string
 ) => Promise<unknown>;
 
+// This is a middleware function that protects routes and auto-catches errors
 export const  authGate = asyncHandler( async(req: AuthRequest, res: Response, next: NextFunction) => {
-    // Request the Bearer Token
+    // Read the authorization Header here and takes the Bearer token
     const authHeader = req.headers['authorization'];
-    // Take the actual token
+    // Take the actual token by removing the attached 'Bearer'
     const token = authHeader?.split(' ')[1];
 
     if(!token){
@@ -47,7 +51,7 @@ export const  authGate = asyncHandler( async(req: AuthRequest, res: Response, ne
     
     // Verify the token
     // If the token is invalid, verifyAsync will naturally "throw" an error
-    // and your asyncHandler will catch it and send it to the Safety Net.
+    // and asyncHandler will catch it and send it to the Safety Net.
     const decoded = await verifyAsync(token, env.JWT_SECRET) as JWTPayload;
 
     req.user =decoded;
@@ -56,7 +60,7 @@ export const  authGate = asyncHandler( async(req: AuthRequest, res: Response, ne
 
 // Signup endpoint
 router.post('/signup', validate(signUpSchema), asyncHandler(async (req: Request, res: Response) => {
-    const { email, password } = req.body;
+        const { email, password } = req.body;
 
         const hashedPassword = await bcrypt.hash(password,10);
 

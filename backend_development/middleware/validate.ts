@@ -4,7 +4,7 @@ import * as z from "zod";
 export const validate = ( schema: z.ZodTypeAny ) => 
     async(req: Request, res: Response, next: NextFunction) => {
         try {
-            // parsse the body against the schema
+            // parse the body against the schema
             await schema.parseAsync({
                 body: req.body,
                 query: req.query,

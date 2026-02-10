@@ -9,6 +9,7 @@ import { validate } from './middleware/validate.js';
 
 
 
+// Define a task model
 interface Task{
     id: number;
     title: string;
@@ -16,13 +17,12 @@ interface Task{
     completed: boolean;
 }
 
+// Add a total_count parameter to find out how many tasks a user mighht have
 interface TaskWithCount extends Task{
     total_count: number;
 }
 
 const router : Router = Router();
-const PORT = 3000;
-
 
 // Fetching tasks from the table
 router.get('/tasks', authGate, asyncHandler( async(req: AuthRequest, res: Response) => {
@@ -35,11 +35,18 @@ router.get('/tasks', authGate, asyncHandler( async(req: AuthRequest, res: Respon
 
     const userId = req.user?.userId;
     const result = await pool.query<TaskWithCount>(
-        'SELECT *, COUNT(*) OVER() AS total_count FROM tasks WHERE user_id = $1 ORDER BY id ASC LIMIT $2 OFFSET $3', [userId, limit, offset]
+        `
+        SELECT *, 
+        COUNT(*) OVER() AS total_count 
+        FROM tasks 
+        WHERE user_id = $1 
+        ORDER BY id 
+        ASC LIMIT $2 OFFSET $3
+        `, 
+        
+        [userId, limit, offset]
     );
-    
-    // We can grab the total count from the first row (if there are any rows)
-    const totalItems = result.rows[0]?.total_count ?? 0;
+
 
     if(result.rows.length === 0){
         throw new AppError('No tasks found', 404);
@@ -86,9 +93,10 @@ router.post('/tasks', authGate, validate(createTaskSchema),  asyncHandler(async(
 router.put('/tasks/:id', authGate, validate(updateTaskSchema), asyncHandler(async(req: AuthRequest, res: Response) => {
     const id = parseInt(req.params.id as string);
     const userId = req.user?.userId;
+    // fields to update
     const updates = req.body;
 
-    // Get the keys of the field provided
+    // Get the names of the fields, say; title.
     const keys = Object.keys(updates);
 
     if(keys.length === 0){
@@ -97,7 +105,6 @@ router.put('/tasks/:id', authGate, validate(updateTaskSchema), asyncHandler(asyn
 
     //Build the SET clause: "title = $1, completed = $2"
     //Using index + 1 because Postgres placeholders start at $1
-     
     const setClause = keys
         .map((key, index) => `${key} = $${index + 1}`)
         .join(', ');

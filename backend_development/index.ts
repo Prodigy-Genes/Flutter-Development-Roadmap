@@ -10,10 +10,13 @@ import helmet from 'helmet';
 import cors from 'cors';
 
 
+// Create an express application
 const app = express();
 
 // Security Middleware
+// Helmet masks the exact framework used to build the backend
 app.use(helmet());
+// Enable the Cross-Origin-Resource-Sharing with a custom doman in prod or open to all in dev
 app.use(cors({
     origin: env.NODE_ENV === 'production' ? 'domain-placeholder.com' : '*', 
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -24,6 +27,7 @@ app.use(cors({
 const PORT = env.PORT;
 
 // Throughput control
+// This controls the rate at which requests are made to server
 const limiter = rateLimit({
     windowMs : 15 * 60 * 1000, // 15 minutes
     max : 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
@@ -33,9 +37,11 @@ const limiter = rateLimit({
 
 app.use(limiter);
 
+
+// This handles the requests and parsing them into json formats for the server
 app.use(express.json());
 
-// health Route
+// health Route monitors the state of the server
 app.get('/health', async (req, res) => {
     try {
         await pool.query('SELECT 1');
@@ -45,14 +51,15 @@ app.get('/health', async (req, res) => {
     }
 });
 
-// Routes
+// Routes for authentication and tasks endpoints
 app.use('/auth', userRouter);
 app.use('/api', taskRouter);
 
-// Error Handler
+// This is a middleware error Handler meant to flag all Errors in the system to logged and shown
+// to the user
 app.use(errorHandler);
 
-// Server
+// Start the server and show if its connected to supabase
 async function startServer() {
     try {
         // Test DB Connection
@@ -63,7 +70,7 @@ async function startServer() {
             logger.info(`Server live in ${env.NODE_ENV} mode at http://localhost:${env.PORT}`);
         });
 
-        // Graceful Shutdown
+        // Graceful Shutdown incase of updates to the server or any form of maintenance
         process.on('SIGTERM', () => {
             logger.info('SIGTERM received. Closing HTTP server...');
             server.close(async () => {

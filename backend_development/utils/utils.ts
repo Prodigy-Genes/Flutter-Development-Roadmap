@@ -11,7 +11,6 @@ export class AppError extends Error{
     }
 }
 
-// We create a high-order function which takes a function and returns a new one
 // It runs in async functions which alerts the AppError about an error in the function
 export const asyncHandler = (fn : Function) => (req: Request, res: Response, next: NextFunction) => {
     //  We execute a particular function, catch and pass any errors to 'next'

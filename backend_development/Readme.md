@@ -1,4 +1,4 @@
-🛡️ Hardened Task Management API
+🛡️BASIC CRUD API
 
 A production-ready, highly secure RESTful API built with Node.js, Express, and TypeScript. Designed with a Security-First mindset, it features robust data validation, protection against common web vulnerabilities, and optimized database interactions via PostgreSQL (Supabase).
 

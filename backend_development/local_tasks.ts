@@ -81,8 +81,9 @@ app.put('/tasks/:id', (req: Request, res: Response) => {
     };
 
     tasks[taskIndex] = updatedTask;
-    res.json(updatedTask)
-    res.status(200).json({message: 'Task updated successfully'})
+    
+    res.status(200).json({message: 'Task updated successfully'});
+    res.json(updatedTask);
 })
 
 // Delete route

@@ -10,3 +10,5 @@ dist/
 .pnpm
 combined.log
 errors.log
+.vercel
+.env*.local

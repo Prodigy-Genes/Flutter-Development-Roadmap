@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import type { NextFunction, Request, Response } from 'express';
+import type { RequestHandler, Request, Response } from 'express';
 import pool from './db.js';
 import jwt from 'jsonwebtoken';
 import { Router } from "express";
@@ -39,24 +39,22 @@ const verifyAsync = promisify(jwt.verify) as (
 ) => Promise<unknown>;
 
 // This is a middleware function that protects routes and auto-catches errors
-export const  authGate = asyncHandler( async(req: AuthRequest, res: Response, next: NextFunction) => {
-    // Read the authorization Header here and takes the Bearer token
-    const authHeader = req.headers['authorization'];
-    // Take the actual token by removing the attached 'Bearer'
-    const token = authHeader?.split(' ')[1];
+export const authGate: RequestHandler = asyncHandler(
+  async (req: AuthRequest, _res, next) => {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader?.split(" ")[1];
 
-    if(!token){
-        throw new AppError('No Token Provided', 401);
+    if (!token) {
+      throw new AppError("No Token Provided", 401);
     }
-    
-    // Verify the token
-    // If the token is invalid, verifyAsync will naturally "throw" an error
-    // and asyncHandler will catch it and send it to the Safety Net.
-    const decoded = await verifyAsync(token, env.JWT_SECRET) as JWTPayload;
 
-    req.user =decoded;
+    const decoded = (await verifyAsync(token, env.JWT_SECRET)) as JWTPayload;
+
+    req.user = decoded;
     next();
-}); 
+  }
+);
+
 
 // Signup endpoint
 router.post('/signup', validate(signUpSchema), asyncHandler(async (req: Request, res: Response) => {
